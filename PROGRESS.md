@@ -26,10 +26,10 @@ This document tracks the end-to-end development of the NHS Mental Health Triage 
 - [x] Implement inference interface for the LLM.
 
 ## Phase 5: Calibration and Prioritisation Logic
-- [ ] Implement probability calibration.
-- [ ] Define thresholds for priority bands (High / Medium / Low).
-- [ ] Implement logic to calculate prioritisation scores and sort the triage queue.
-- [ ] Implement prioritisation evaluation metrics (`nlp/evaluation.py`).
+- [x] Implement probability calibration.
+- [x] Define thresholds for priority bands.
+- [x] Implement logic to calculate prioritisation scores.
+- [x] Implement prioritisation evaluation metrics (`nlp/evaluation.py`).
 
 ## Phase 6: API Integration
 - [ ] Update `/predict` to use actual ML models (Baseline or LLM).
