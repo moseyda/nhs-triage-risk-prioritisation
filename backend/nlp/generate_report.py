@@ -3,17 +3,16 @@ import json
 import torch
 import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from nlp.data_utils import load_synthetic_referral_data, preprocess_data, get_train_val_test_splits
+from nlp.data_utils import preprocess_data, get_train_val_test_splits
+from nlp.eval_data_utils import generate_ood_evaluation_data
 from nlp.train_baseline import predict_risk_baseline
 from nlp.prioritisation import get_priority_band, calculate_prioritisation_score
 from nlp.evaluation import evaluate_triage_queue
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 def generate_report():
-    print("Loading test data...")
-    df = load_synthetic_referral_data(num_samples=1000)
-    df = preprocess_data(df)
-    _, _, test_df = get_train_val_test_splits(df)
+    print("Loading OOD (Out-Of-Distribution) messy evaluation data...")
+    test_df = generate_ood_evaluation_data(num_samples=500)
     
     # 1. Evaluate Baseline Model
     print("Evaluating Baseline Model (TF-IDF + LR)...")
