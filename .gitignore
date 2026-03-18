@@ -31,7 +31,3 @@ frontend/build/
 .idea/
 .DS_Store
 Thumbs.db
-
-# Project Extra Files (Optional - uncomment if you don't want to push the huge raw pdf)
-# Mo_Seyda_Dissertation__Copy_.pdf
-# dissertation_text.txt
