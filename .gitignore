@@ -1,0 +1,37 @@
+# Virtual Environment
+backend/venv/
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Machine Learning Saved Models / Artifacts
+# We ignore these because they exceed GitHub file size limits and are generated dynamically
+backend/models_saved/
+backend/nlp/logs/
+*.joblib
+*.pt
+*.pth
+*.onnx
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.npm/
+
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Project Extra Files (Optional - uncomment if you don't want to push the huge raw pdf)
+# Mo_Seyda_Dissertation__Copy_.pdf
+# dissertation_text.txt

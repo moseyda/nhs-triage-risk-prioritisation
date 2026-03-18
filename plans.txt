@@ -1,0 +1,117 @@
+This project enhances a BERT‑based NLP algorithm for detecting self‑harm risk in NHS‑style mental health referral text and refines the surrounding probability calibration and prioritisation logic. The work benchmarks and improves an existing transformer‑based triage approach (inspired by systems such as Chronosig and CPC), then embeds the enhanced model in a simulated NHS decision‑support prototype. The main focus is on how well the algorithm identifies high‑risk patients, how calibrated and clinically meaningful its risk bands are, and how its outputs can safely support, rather than replace, clinician‑led prioritisation in a realistic triage workflow.
+
+The working project title is:
+
+Enhancing Transformer‑Based NLP (BERT/LLM) for Self‑Harm Risk Prioritisation in Simulated NHS Mental Health Triage
+
+Core aims
+Build a reproducible pipeline that:
+
+Takes referral‑like free‑text plus simple metadata in a simulated NHS triage setting.
+
+Uses a baseline TF–IDF + logistic regression model and an enhanced BERT/LLM‑based classifier to estimate self‑harm risk from text.
+
+Calibrates model probabilities and maps them to priority bands (high / medium / low).
+
+Applies explicit prioritisation logic to generate a sortable triage queue.
+
+Compare and improve on existing triage‑style NLP algorithms using clear quantitative metrics and error analysis.
+
+Demonstrate the approach in a simulated NHS workflow that keeps clinicians in the loop and respects ethical and practical constraints.
+
+Planned technology stack
+Backend: Python 3.11+, FastAPI, Pydantic, Uvicorn.
+
+ML / NLP: PyTorch, Hugging Face Transformers, scikit‑learn, pandas, numpy.
+
+LLM backbone: transformer‑based models (e.g. BERT and related encoder LLMs) fine‑tuned for self‑harm risk detection on referral‑style text.
+
+Frontend: React single‑page application that calls the FastAPI API (mandatory frontend for the prototype).
+
+Development: git version control, simple configuration files, and a small set of unit tests.
+
+Deliberately not using heavy web infrastructure (Django, Celery, Redis, SageMaker, etc.) so that effort is focused on the triage algorithm and evaluation.
+
+System design alignment
+The implementation will follow the system design and diagrams already drafted in the dissertation:
+
+High‑level architecture: React/web frontend → FastAPI backend → NLP risk scoring module (BERT/LLM) → prioritisation and triage logic → clinician triage view with a prioritised referral list.
+
+Data pipeline: anonymised / synthetic referral‑style datasets and open mental health corpora → preprocessing (cleaning, de‑identification, tokenisation, label harmonisation) → train/validation/test splits → baseline, intermediate, and enhanced models → prioritisation logic (calibration, thresholds, band mapping, queue ordering) → evaluation using both classification metrics and prioritisation metrics (e.g. proportion of high‑risk cases near the top of the queue).
+
+Model comparison: baseline pipeline (TF–IDF + logistic regression + simple rule‑based priority mapping) versus enhanced pipeline (BERT/LLM + calibrated probability + priority bands + ordered triage list).
+
+Detailed model pipeline: tokenizer → BERT encoder → dropout + linear head → softmax probabilities → calibration → thresholding and banding → prioritisation score + tie‑breaking → output (risk probability, priority band, prioritisation score).
+
+Simulated NHS workflow: patient/system side (submit text → model suggestion → prioritisation updates queue → prioritised list) and clinician side (view list → inspect case with score/band/explanation → confirm, upgrade, or downgrade → record final decision).
+
+Implementation plan (high level)
+Project structure
+
+Create a lean but extensible folder layout, for example:
+
+backend/app/ for the FastAPI application (main, API routes, schemas, config, model loading).
+
+backend/nlp/ for data utilities, baseline and BERT training scripts, and evaluation functions.
+
+backend/tests/ for API and model unit tests.
+
+frontend/ for the React SPA that calls the /predict endpoint.
+
+Ensure naming and modules match the figures in the System Design chapter.
+
+Minimal backend API
+
+Implement a FastAPI service with:
+
+GET /health for a simple status check.
+
+POST /predict that accepts { text, metadata } and returns { risk_score, priority_band, prioritisation_score }.
+
+Initially, return dummy values from /predict to test the end‑to‑end flow.
+
+Baseline model development
+
+Select a suitable mental‑health‑like or generic text dataset with risk‑style labels.
+
+Implement preprocessing, label mapping, and train/validation/test splits.
+
+Train a TF–IDF + logistic regression classifier and compute precision, recall, F1, AUC, and confusion matrices.
+
+Save the trained baseline model and vectoriser and expose a predict_risk_baseline function.
+
+BERT/LLM model development
+
+Fine‑tune a transformer model (e.g. BERT or a similar encoder LLM) on referral‑style text for self‑harm risk classification.
+
+Implement training, validation, model saving, and an inference function predict_risk_bert.
+
+Calibration and prioritisation logic
+
+Calibrate predicted probabilities on the validation set (e.g. simple scaling methods).
+
+Choose thresholds for high / medium / low priority bands.
+
+Implement a prioritisation function that combines band and probability into a sortable score and can rank a batch of referrals.
+
+Define prioritisation metrics (e.g. high‑risk@k, mean rank of high‑risk cases) to evaluate how well the queue ordering matches clinical priorities.
+
+Integration into the API and React frontend
+
+Wire the chosen model (baseline first, then BERT/LLM) into the /predict endpoint, including preprocessing, calibration, banding, and scoring.
+
+Build a small React SPA that:
+
+Accepts referral‑style text and metadata.
+
+Calls the FastAPI /predict endpoint.
+
+Displays the risk score, priority band, and prioritisation score.
+
+Optionally renders a small list of referrals sorted by prioritisation score to mimic the triage queue.
+
+Evaluation and dissertation linkage
+
+Run controlled experiments comparing baseline versus BERT/LLM models on both standard classification metrics and prioritisation metrics.
+
+Use results and error analysis to populate the Results and Discussion chapters, linking back to the limitations of Chronosig/CPC and the research questions.
