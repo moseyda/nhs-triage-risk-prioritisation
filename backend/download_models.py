@@ -5,8 +5,6 @@ from huggingface_hub import snapshot_download
 def download_models():
     """
     Downloads the required baseline and LLM model files from Hugging Face Hub.
-    In an industry setting, you would replace 'YOUR_HF_USERNAME/nhs_mental_health_triage_ai'
-    with your actual Hugging Face model repository.
     """
     # Create the target directory
     models_dir = os.path.join(os.path.dirname(__file__), "models_saved")
@@ -17,7 +15,7 @@ def download_models():
     if not os.path.exists(baseline_path):
         print("Downloading Baseline model from Hugging Face Hub...")
         # URL for raw file download from Hugging Face
-        url = "https://huggingface.co/moseyda/nhs-triage-prototype/resolve/main/baseline_pipeline.joblib"
+        url = "https://huggingface.co/sydm20/nhs-triage-prototype/resolve/main/baseline_pipeline.joblib"
         urllib.request.urlretrieve(url, baseline_path)
         print("  -> Baseline model downloaded.")
     else:
@@ -27,7 +25,7 @@ def download_models():
     llm_dir = os.path.join(models_dir, "llm_finetuned")
     if not os.path.exists(llm_dir):
         print("Downloading Fine-tuned LLM from Hugging Face Hub...")
-        repo_id = "moseyda/nhs-triage-prototype"
+        repo_id = "sydm20/nhs-triage-prototype"
         
         # We only want to download the llm_finetuned subfolder from the repo
         snapshot_download(
