@@ -21,6 +21,7 @@ def health_check():
 def predict_triage(request: ReferralRequest):
     """
     Simulated endpoint designed as if calling the final unified ML pipeline.
+    """
     try:
         result = triage_service.predict(request.text)
         return TriageResponse(
