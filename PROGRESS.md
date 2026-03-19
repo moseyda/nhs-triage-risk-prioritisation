@@ -36,10 +36,10 @@ This document tracks the end-to-end development of the NHS Mental Health Triage 
 - [x] Wire up prioritisation logic within the API response.
 
 ## Phase 7: Frontend Development (Simulated Clinician Interface)
-- [ ] Initialize React SPA with Vite.
-- [ ] Create referral submission form.
-- [ ] Create prioritised triage queue display.
-- [ ] Integrate React frontend with FastAPI backend.
+- [x] Initialize React SPA with Vite.
+- [x] Create referral submission form.
+- [x] Create prioritised triage queue display.
+- [x] Integrate React frontend with FastAPI backend.
 
 ## Phase 8: Deployment and Version Control
 - [x] Create `.gitignore` to prevent pushing large datasets and models.
