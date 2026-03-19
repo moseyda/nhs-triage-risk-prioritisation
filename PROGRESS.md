@@ -32,8 +32,8 @@ This document tracks the end-to-end development of the NHS Mental Health Triage 
 - [x] Implement prioritisation evaluation metrics (`nlp/evaluation.py`).
 
 ## Phase 6: API Integration
-- [ ] Update `/predict` to use actual ML models (Baseline or LLM).
-- [ ] Wire up prioritisation logic within the API response.
+- [x] Update `/predict` to use actual ML models (Baseline or LLM).
+- [x] Wire up prioritisation logic within the API response.
 
 ## Phase 7: Frontend Development (Simulated Clinician Interface)
 - [ ] Initialize React SPA with Vite.
