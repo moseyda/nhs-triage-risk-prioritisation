@@ -39,6 +39,10 @@ def generate_report():
     model_dir = os.path.join(os.path.dirname(__file__), "..", "models_saved", "llm_finetuned")
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
     model = AutoModelForSequenceClassification.from_pretrained(model_dir)
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Using device for LLM Evaluation: {device}")
+    model = model.to(device)
     model.eval()
 
     llm_results = []
@@ -50,7 +54,7 @@ def generate_report():
             max_length=128,
             padding='max_length',
             truncation=True
-        )
+        ).to(device)
         with torch.no_grad():
             outputs = model(**encoding)
             logits = outputs.logits

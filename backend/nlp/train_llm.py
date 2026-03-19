@@ -135,6 +135,9 @@ def predict_risk_llm(text: str) -> dict:
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
     model = AutoModelForSequenceClassification.from_pretrained(model_dir)
     
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = model.to(device)
+    
     # Ensure model is in eval mode
     model.eval()
     
@@ -144,7 +147,7 @@ def predict_risk_llm(text: str) -> dict:
         max_length=128,
         padding='max_length',
         truncation=True
-    )
+    ).to(device)
     
     with torch.no_grad():
         outputs = model(**encoding)
