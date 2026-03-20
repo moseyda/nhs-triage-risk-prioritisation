@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { RefreshCw, Inbox, Stethoscope, AlertTriangle, CheckCircle } from 'lucide-react'
 import './App.css'
 
 interface TriageResponse {
@@ -64,15 +65,15 @@ function App() {
           <h1>CDSS Triage Workspace</h1>
           <p>AI-Assisted Mental Health Referral Prioritisation</p>
         </div>
-        <button onClick={fetchQueue} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ccc', cursor: 'pointer', background: 'white' }}>
-          🔄 Refresh EHR Queue
+        <button onClick={fetchQueue} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ccc', cursor: 'pointer', background: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <RefreshCw size={16} /> Refresh EHR Queue
         </button>
       </div>
 
       {/* Left Panel: The Triage Inbox Queue */}
       <div className="panel sidebar">
         <div className="panel-header">
-          <h2>📥 Waiting List ({queue.length})</h2>
+          <h2><Inbox size={20} /> Waiting List ({queue.length})</h2>
         </div>
         
         {loading ? (
@@ -111,7 +112,7 @@ function App() {
       <div className="panel">
         {!selectedCase ? (
           <div className="empty-state">
-            <span style={{ fontSize: '3rem' }}>🩺</span>
+            <Stethoscope size={48} color="#888" />
             <p>Select a patient referral from the queue to review the AI's triage recommendation.</p>
           </div>
         ) : (
@@ -156,10 +157,10 @@ function App() {
 
             <div className="action-buttons">
               <button className="btn btn-override" onClick={() => handleApprove(selectedCase.id)}>
-                ⚠️ Override & Escalate
+                <AlertTriangle size={20} /> Override & Escalate
               </button>
               <button className="btn btn-approve" onClick={() => handleApprove(selectedCase.id)}>
-                ✅ Approve Triage
+                <CheckCircle size={20} /> Approve Triage
               </button>
             </div>
             <p style={{ textAlign: 'center', color: '#888', fontSize: '0.85rem', marginTop: '-0.5rem' }}>
