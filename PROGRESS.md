@@ -44,4 +44,4 @@ This document tracks the end-to-end development of the NHS Mental Health Triage 
 ## Phase 8: Deployment and Version Control
 - [x] Create `.gitignore` to prevent pushing large datasets and models.
 - [x] Create GitHub repository and link local Git instance.
-- [/] Push committed code to remote `nhs_mental_health_triage_ai` repository.
+- [x] Push committed code to remote `nhs_mental_health_triage_ai` repository.
