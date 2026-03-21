@@ -154,17 +154,13 @@ function App() {
                   selectedCase.ai_triage.word_attributions.map((attr, idx) => (
                     <span 
                       key={idx} 
-                      style={{ 
-                        backgroundColor: getAttributionColor(attr.impact_score),
-                        padding: '2px 4px',
-                        borderRadius: '4px',
-                        marginRight: '4px',
-                        display: 'inline-block',
-                        cursor: 'help'
-                      }}
-                      title={`Risk Impact: ${attr.impact_score > 0 ? '+' : ''}${(attr.impact_score * 100).toFixed(1)}%`}
+                      className="xai-word"
+                      style={{ backgroundColor: getAttributionColor(attr.impact_score) }}
                     >
                       {attr.word}
+                      <span className="tooltip">
+                        Impact: {attr.impact_score > 0 ? '+' : ''}{(attr.impact_score * 100).toFixed(1)}%
+                      </span>
                     </span>
                   ))
                 ) : (
