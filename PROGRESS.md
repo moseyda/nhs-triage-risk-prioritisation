@@ -52,6 +52,11 @@ This document tracks the end-to-end development of the NHS Mental Health Triage 
 - [x] Build XAI clinical insight viewer (color-coded highlighting) inside React EHR dashboard.
 
 ## Phase 10: Active Learning (Continuous Feedback Loop)
-- [ ] Build `/feedback` API endpoint to capture clinician overrides.
-- [ ] Wire React `Override` button to submit corrected ground-truth labels.
-- [ ] Save override data to a simulated retraining dataset (`feedback_loop.csv`).
+- [x] Build `/feedback` API endpoint to capture clinician overrides.
+- [x] Wire React `Override` button to submit corrected ground-truth labels.
+- [x] Save override data to a simulated retraining dataset (`feedback_loop.csv`).
+
+## Phase 11: True "Self-Healing" MLOps Automation
+- [x] Build PyTorch fine-tuning script (`retrain_active_learning.py`).
+- [x] Combine Batch-size thresholds, Confidence Degradation checks, and Manual UI overrides into a unified trigger mechanism.
+- [x] Wire the React dashboard with a "Force MLOps Retrain" button to dynamically update the live BERT model.

@@ -37,6 +37,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null)
   const [overrideTarget, setOverrideTarget] = useState<PatientCase | null>(null)
+  const [isRetraining, setIsRetraining] = useState(false)
 
   const fetchQueue = async () => {
     setLoading(true);
@@ -59,6 +60,24 @@ function App() {
   useEffect(() => {
     fetchQueue();
   }, [])
+
+  const handleRetrain = async () => {
+    if (!window.confirm("Are you sure you want to force massive GPU retraining calculations? This will pause model inference for up to 15 seconds.")) return;
+    
+    setIsRetraining(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/trigger-retrain', { method: 'POST' });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to trigger retraining.");
+      }
+      alert("Retraining successfully triggered! The live AI weights will mathematically adjust to the recent Ground Truth overrides and hot-reload shortly.");
+    } catch (err: any) {
+      alert("Retraining failed: " + err.message);
+    } finally {
+      setIsRetraining(false);
+    }
+  }
 
   const handleApprove = (id: string) => {
     // In a real app, this would send an API request to mark as Triaged
@@ -110,9 +129,14 @@ function App() {
           <h1>CDSS Triage Workspace</h1>
           <p>AI-Assisted Mental Health Referral Prioritisation</p>
         </div>
-        <button onClick={fetchQueue} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ccc', cursor: 'pointer', background: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <RefreshCw size={16} /> Refresh EHR Queue
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button onClick={handleRetrain} disabled={isRetraining} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #da291c', cursor: isRetraining ? 'not-allowed' : 'pointer', background: 'rgba(218, 41, 28, 0.05)', color: '#da291c', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+             {isRetraining ? <div className="spinner" style={{width: '16px', height: '16px', margin: 0, borderWidth: '2px', borderColor: 'rgba(218, 41, 28, 0.2)', borderTopColor: '#da291c'}}></div> : '⚠️ Force MLOps Retrain'}
+          </button>
+          <button onClick={fetchQueue} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ccc', cursor: 'pointer', background: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <RefreshCw size={16} /> Refresh EHR Queue
+          </button>
+        </div>
       </div>
 
       {/* Left Panel: The Triage Inbox Queue */}

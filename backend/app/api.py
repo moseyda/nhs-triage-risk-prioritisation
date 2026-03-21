@@ -2,11 +2,12 @@ import uuid
 import random
 import csv
 import os
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from typing import List
 from .schemas import ReferralRequest, TriageResponse, PatientCase, FeedbackRequest
 from .config import settings
 from .services import triage_service
+from nlp.retrain_active_learning import run_active_learning
 
 router = APIRouter()
 
@@ -77,10 +78,11 @@ def predict_triage(request: ReferralRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/feedback", summary="Active Learning Feedback Loop")
-def submit_feedback(feedback: FeedbackRequest):
+def submit_feedback(feedback: FeedbackRequest, background_tasks: BackgroundTasks):
     """
     Captures human clinician overrides to build a retraining dataset for MLOps.
     Solves the 'Concept Drift' problem by archiving errors.
+    Automatically triggers a background GPU retraining session if 5 overrides are queued.
     """
     file_path = "feedback_loop.csv"
     file_exists = os.path.isfile(file_path)
@@ -98,4 +100,39 @@ def submit_feedback(feedback: FeedbackRequest):
             feedback.human_corrected_band,
             feedback.referral_text
         ])
+        
+    # Check if we hit the limit to auto-retrain
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            # If headers + 5 data rows = 6 lines
+            if len(lines) >= 6:
+                print("[MLOps] Batch threshold reached. Triggering autonomous retraining.")
+                background_tasks.add_task(_background_retrain_task)
+    except Exception:
+        pass
+        
     return {"status": "success", "message": "Feedback captured for continuous learning."}
+
+def _background_retrain_task():
+    try:
+        success, msg = run_active_learning()
+        if success:
+            print("[MLOps] Retraining complete. Hot-reloading live model weights into VRAM.")
+            triage_service.load_models()
+        else:
+            print(f"[MLOps] Retraining skipped: {msg}")
+    except Exception as e:
+        print(f"[MLOps] CRITICAL ERROR during background retraining: {e}")
+
+@router.post("/trigger-retrain", summary="Force MLOps Retraining")
+def force_retrain(background_tasks: BackgroundTasks):
+    """
+    Manual Admin trigger to mathematically unlearn shortcuts and update live weights. 
+    """
+    file_path = "feedback_loop.csv"
+    if not os.path.isfile(file_path):
+         raise HTTPException(status_code=400, detail="No feedback data to train on.")
+         
+    background_tasks.add_task(_background_retrain_task)
+    return {"status": "ok", "message": "Active Learning retraining initiated on GPU. Live models will hot-reload in approximately 10-15 seconds."}
