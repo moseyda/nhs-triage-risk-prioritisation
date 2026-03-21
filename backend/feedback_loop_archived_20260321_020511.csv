@@ -1,0 +1,4 @@
+timestamp,patient_id,ai_risk_score,human_corrected_band,referral_text
+2026-03-21T01:41:51.965107,NHS-911722,0.0021903791930526495,Medium,Panic attacks are getting worse. Afraid to leave the house. Feel completely trapped.
+2026-03-21T01:53:07.965641,NHS-432482,0.0021903791930526495,Medium,Panic attacks are getting worse. Afraid to leave the house. Feel completely trapped.
+2026-03-21T01:55:33.139515,NHS-438302,0.0021903791930526495,Medium,Panic attacks are getting worse. Afraid to leave the house. Feel completely trapped.
