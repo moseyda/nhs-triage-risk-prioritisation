@@ -83,15 +83,27 @@ def run_active_learning():
         
     print(f"[MLOps] Concept Drift correction complete. Avg Loss: {loss_sum/(len(loader)*2)}")
     
-    # Save the mathematically updated model back to disk
-    model.save_pretrained(MODEL_DIR)
-    tokenizer.save_pretrained(MODEL_DIR)
+    # Save the mathematically updated model into a NEW Rolling Checkpoint directory to prevent Windows file locks
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    new_model_dir = os.path.join(os.path.dirname(__file__), "..", "models_saved", f"llm_finetuned_{timestamp}")
+    model.save_pretrained(new_model_dir)
+    tokenizer.save_pretrained(new_model_dir)
+    
+    # Prune old checkpoints (keep the new one and the one currently locked in RAM)
+    import glob
+    all_checkpoints = sorted(glob.glob(os.path.join(os.path.dirname(__file__), "..", "models_saved", "llm_finetuned_*")))
+    if len(all_checkpoints) > 3:
+        for old_dir in all_checkpoints[:-3]:
+            try:
+                shutil.rmtree(old_dir)
+            except Exception:
+                pass # Ignore if still locked by OS
     
     # Archive the CSV so the model doesn't endlessly train on the exact same records
-    archive_name = os.path.join(os.path.dirname(__file__), "..", f"feedback_loop_archived_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
+    archive_name = os.path.join(os.path.dirname(__file__), "..", f"feedback_loop_archived_{timestamp}.csv")
     shutil.move(csv_file, archive_name)
     
-    return True, f"Successfully fine-tuned model on {len(df)} cases and archived feedback data."
+    return True, new_model_dir
 
 if __name__ == "__main__":
     success, msg = run_active_learning()

@@ -116,12 +116,12 @@ def submit_feedback(feedback: FeedbackRequest, background_tasks: BackgroundTasks
 
 def _background_retrain_task():
     try:
-        success, msg = run_active_learning()
+        success, result_path = run_active_learning()
         if success:
-            print("[MLOps] Retraining complete. Hot-reloading live model weights into VRAM.")
-            triage_service.load_models()
+            print(f"[MLOps] Retraining complete. Hot-reloading live model weights from {result_path} into VRAM.")
+            triage_service.load_models(custom_model_dir=result_path)
         else:
-            print(f"[MLOps] Retraining skipped: {msg}")
+            print(f"[MLOps] Retraining skipped: {result_path}")
     except Exception as e:
         print(f"[MLOps] CRITICAL ERROR during background retraining: {e}")
 
