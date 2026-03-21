@@ -7,8 +7,8 @@ from transformers import BertTokenizer, BertForSequenceClassification
 from torch.utils.data import Dataset, DataLoader
 from torch.optim import AdamW
 
-# We assume the model was compiled and saved to models_saved/llm
-MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "models_saved", "llm")
+# We assume the model was compiled and saved to models_saved/llm_finetuned
+MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "models_saved", "llm_finetuned")
 
 class FeedbackDataset(Dataset):
     def __init__(self, texts, labels, tokenizer, max_len=128):
