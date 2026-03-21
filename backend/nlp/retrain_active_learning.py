@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 import shutil
 import datetime
-from transformers import BertTokenizer, BertForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from torch.utils.data import Dataset, DataLoader
 from torch.optim import AdamW
 
@@ -23,7 +23,7 @@ class FeedbackDataset(Dataset):
     def __getitem__(self, idx):
         text = str(self.texts[idx])
         label = self.labels[idx]
-        encoding = self.tokenizer.encode_plus(
+        encoding = self.tokenizer(
             text, add_special_tokens=True, max_length=self.max_len,
             return_token_type_ids=False, padding='max_length',
             truncation=True, return_attention_mask=True,
@@ -55,8 +55,8 @@ def run_active_learning():
         return False, "Source LLM weights not found. Cannot retrain."
 
     # Load existing model and tokenizer safely into VRAM
-    tokenizer = BertTokenizer.from_pretrained(MODEL_DIR)
-    model = BertForSequenceClassification.from_pretrained(MODEL_DIR, num_labels=3)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR, num_labels=3)
     model = model.to(device)
     model.train()
     
