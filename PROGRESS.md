@@ -45,3 +45,8 @@ This document tracks the end-to-end development of the NHS Mental Health Triage 
 - [x] Create `.gitignore` to prevent pushing large datasets and models.
 - [x] Create GitHub repository and link local Git instance.
 - [x] Push committed code to remote `nhs_mental_health_triage_ai` repository.
+
+## Phase 9: Explainable AI (XAI / Interpretability)
+- [x] Implement mathematical Leave-One-Out (Occlusion) attribution in PyTorch backend.
+- [x] Return token impact weights to the frontend.
+- [x] Build XAI clinical insight viewer (color-coded highlighting) inside React EHR dashboard.

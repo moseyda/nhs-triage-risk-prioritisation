@@ -2,10 +2,16 @@ import { useState, useEffect } from 'react'
 import { RefreshCw, Inbox, Stethoscope, AlertTriangle, CheckCircle } from 'lucide-react'
 import './App.css'
 
+interface WordAttribution {
+  word: string;
+  impact_score: number;
+}
+
 interface TriageResponse {
   risk_score: number;
   priority_band: 'High' | 'Medium' | 'Low';
   prioritisation_score: number;
+  word_attributions: WordAttribution[];
 }
 
 interface PatientCase {
@@ -16,6 +22,14 @@ interface PatientCase {
   referral_text: string;
   ai_triage: TriageResponse;
 }
+
+const getAttributionColor = (score: number) => {
+  if (score > 0.20) return 'rgba(218, 41, 28, 0.6)'; // Very high risk trigger (NHS Red)
+  if (score > 0.05) return 'rgba(218, 41, 28, 0.3)';
+  if (score > 0.01) return 'rgba(218, 41, 28, 0.1)';
+  if (score < -0.05) return 'rgba(0, 150, 57, 0.2)'; // Safety indicator (NHS Green)
+  return 'transparent';
+};
 
 function App() {
   const [queue, setQueue] = useState<PatientCase[]>([])
@@ -131,9 +145,31 @@ function App() {
             </div>
 
             <div>
-              <span className="metric-label">Raw Clinical Referral Text</span>
-              <div className="referral-box">
-                "{selectedCase.referral_text}"
+              <span className="metric-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Explainable AI (XAI) Feature Attribution</span>
+                <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 'normal' }}>Hover words for impact score</span>
+              </span>
+              <div className="referral-box" style={{ lineHeight: '1.8' }}>
+                {selectedCase.ai_triage.word_attributions && selectedCase.ai_triage.word_attributions.length > 0 ? (
+                  selectedCase.ai_triage.word_attributions.map((attr, idx) => (
+                    <span 
+                      key={idx} 
+                      style={{ 
+                        backgroundColor: getAttributionColor(attr.impact_score),
+                        padding: '2px 4px',
+                        borderRadius: '4px',
+                        marginRight: '4px',
+                        display: 'inline-block',
+                        cursor: 'help'
+                      }}
+                      title={`Risk Impact: ${attr.impact_score > 0 ? '+' : ''}${(attr.impact_score * 100).toFixed(1)}%`}
+                    >
+                      {attr.word}
+                    </span>
+                  ))
+                ) : (
+                  `"${selectedCase.referral_text}"`
+                )}
               </div>
             </div>
 

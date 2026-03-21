@@ -5,10 +5,15 @@ class ReferralRequest(BaseModel):
     text: str = Field(..., description="The free-text clinical referral to be triaged.")
     metadata: Optional[dict] = Field(default=None, description="Optional patient or referral metadata.")
 
+class WordAttribution(BaseModel):
+    word: str
+    impact_score: float
+
 class TriageResponse(BaseModel):
     risk_score: float = Field(..., description="The calibrated probability risk score output by the model.", ge=0.0, le=1.0)
     priority_band: str = Field(..., description="The clinical priority band: e.g., 'High', 'Medium', 'Low'.")
     prioritisation_score: float = Field(..., description="The calculated score used to rank the referral in the triage queue.")
+    word_attributions: List[WordAttribution] = Field(default_factory=list, description="XAI feature attributions highlighting which words drove the risk prediction.")
 
 class PatientCase(BaseModel):
     id: str

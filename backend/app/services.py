@@ -47,6 +47,41 @@ class TriageService:
         else:
             self.is_ready = True
             
+    def _compute_occlusion_attributions(self, text: str, base_risk: float) -> list:
+        # Simple, fast, and robust XAI via Leave-One-Out (Occlusion) Token masking
+        words = text.split()
+        if len(words) > 100:
+            words = words[:100] # Cap for API response speed
+            
+        attributions = []
+        for i, word in enumerate(words):
+            masked_words = words.copy()
+            masked_words[i] = "[MASK]" # Replace target word with BERT's mask token
+            masked_text = " ".join(masked_words)
+            
+            encoding = self.tokenizer(
+                masked_text.lower(),
+                return_tensors='pt',
+                max_length=128,
+                padding='max_length',
+                truncation=True
+            ).to(self.device)
+            
+            with torch.no_grad():
+                outputs = self.model(**encoding)
+                probs = torch.nn.functional.softmax(outputs.logits, dim=-1).squeeze().tolist()
+                masked_risk = probs[2]
+                
+            # If removing this word dropped the risk, the word strongly drove the HIGH risk prediction
+            impact = base_risk - masked_risk
+            
+            attributions.append({
+                "word": word,
+                "impact_score": float(impact)
+            })
+            
+        return attributions
+            
     def predict(self, text: str) -> dict:
         if not self.is_ready:
             raise RuntimeError("Models are not loaded on server. Cannot process referral.")
@@ -64,10 +99,15 @@ class TriageService:
                 outputs = self.model(**encoding)
                 probs = torch.nn.functional.softmax(outputs.logits, dim=-1).squeeze().tolist()
                 risk_prob = probs[2] # High risk is class 2
+                
+            word_attributions = self._compute_occlusion_attributions(text, risk_prob)
         else:
-            # Baseline fallback
+            # Baseline fallback (no XAI supported yet)
             probs = self.baseline_pipeline.predict_proba([text])[0]
             risk_prob = probs[2]
+            
+            # Dummy attributions for baseline
+            word_attributions = [{"word": w, "impact_score": 0.0} for w in text.split()]
             
         # Feed exactly into Phase 5 Prioritisation Logic
         band = get_priority_band(risk_prob)
@@ -76,7 +116,8 @@ class TriageService:
         return {
             "risk_score": float(risk_prob),
             "priority_band": band,
-            "prioritisation_score": float(score)
+            "prioritisation_score": float(score),
+            "word_attributions": word_attributions
         }
 
 # Global singleton to be used across API calls
