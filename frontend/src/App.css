@@ -250,6 +250,83 @@
   border-top: 1px solid #eee;
 }
 
+/* Glassmorphism Override Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 48, 135, 0.4);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  text-align: center;
+  animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-desc {
+  margin: 1.5rem 0;
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.band-button {
+  padding: 1rem;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.band-button.high { border-color: var(--priority-high); color: var(--priority-high); }
+.band-button.high:hover { background: var(--priority-high); color: white; }
+
+.band-button.medium { border-color: var(--priority-medium); color: var(--priority-medium); }
+.band-button.medium:hover { background: var(--priority-medium); color: white; }
+
+.band-button.low { border-color: var(--priority-low); color: var(--priority-low); }
+.band-button.low:hover { background: var(--priority-low); color: white; }
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s;
+}
+.modal-close:hover {
+  color: var(--nhs-dark-blue);
+  text-decoration: underline;
+}
+
 .btn {
   flex: 1;
   padding: 1.2rem;
