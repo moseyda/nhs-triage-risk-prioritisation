@@ -70,6 +70,39 @@ function App() {
     }
   }
 
+  const handleOverride = async (id: string) => {
+    const targetCase = queue.find(c => c.id === id);
+    if (!targetCase) return;
+
+    const correction = window.prompt(`ACTIVE LEARNING OVERRIDE\nThe AI predicted this is a ${targetCase.ai_triage.priority_band} Risk patient.\n\nWhat is the CORRECT clinical priority? (Type: High, Medium, or Low)`);
+    if (!correction) return; // User clicked cancel
+
+    const validBands = ['High', 'Medium', 'Low'];
+    const formatted = correction.trim().charAt(0).toUpperCase() + correction.trim().slice(1).toLowerCase();
+    
+    if (!validBands.includes(formatted)) {
+      alert("Invalid input. Please type exactly: High, Medium, or Low.");
+      return;
+    }
+
+    try {
+      await fetch('http://localhost:8000/api/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: targetCase.mrn,
+          referral_text: targetCase.referral_text,
+          ai_risk_score: targetCase.ai_triage.risk_score,
+          human_corrected_band: formatted
+        })
+      });
+      alert(`Override Captured! Patient ${targetCase.mrn} has been escalated to ${formatted} Priority.\nThis error has been logged to the Machine Learning retraining database (feedback_loop.csv).`);
+      handleApprove(id); // remove from queue
+    } catch (err) {
+      alert("Failed to submit MLOps feedback override.");
+    }
+  }
+
   const selectedCase = queue.find(c => c.id === selectedCaseId);
 
   return (
@@ -188,7 +221,7 @@ function App() {
             </div>
 
             <div className="action-buttons">
-              <button className="btn btn-override" onClick={() => handleApprove(selectedCase.id)}>
+              <button className="btn btn-override" onClick={() => handleOverride(selectedCase.id)}>
                 <AlertTriangle size={20} /> Override & Escalate
               </button>
               <button className="btn btn-approve" onClick={() => handleApprove(selectedCase.id)}>

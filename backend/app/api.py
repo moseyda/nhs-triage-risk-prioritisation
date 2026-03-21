@@ -1,8 +1,10 @@
 import uuid
 import random
+import csv
+import os
 from fastapi import APIRouter, HTTPException
 from typing import List
-from .schemas import ReferralRequest, TriageResponse, PatientCase
+from .schemas import ReferralRequest, TriageResponse, PatientCase, FeedbackRequest
 from .config import settings
 from .services import triage_service
 
@@ -73,3 +75,27 @@ def predict_triage(request: ReferralRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/feedback", summary="Active Learning Feedback Loop")
+def submit_feedback(feedback: FeedbackRequest):
+    """
+    Captures human clinician overrides to build a retraining dataset for MLOps.
+    Solves the 'Concept Drift' problem by archiving errors.
+    """
+    file_path = "feedback_loop.csv"
+    file_exists = os.path.isfile(file_path)
+    
+    with open(file_path, mode='a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["timestamp", "patient_id", "ai_risk_score", "human_corrected_band", "referral_text"])
+            
+        import datetime
+        writer.writerow([
+            datetime.datetime.now().isoformat(),
+            feedback.patient_id,
+            feedback.ai_risk_score,
+            feedback.human_corrected_band,
+            feedback.referral_text
+        ])
+    return {"status": "success", "message": "Feedback captured for continuous learning."}

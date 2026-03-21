@@ -5,6 +5,12 @@ class ReferralRequest(BaseModel):
     text: str = Field(..., description="The free-text clinical referral to be triaged.")
     metadata: Optional[dict] = Field(default=None, description="Optional patient or referral metadata.")
 
+class FeedbackRequest(BaseModel):
+    patient_id: str = Field(..., description="The simulated EHR patient ID.")
+    referral_text: str = Field(..., description="The original referral text.")
+    ai_risk_score: float = Field(..., description="What the AI originally predicted.")
+    human_corrected_band: str = Field(..., description="The clinician's override decision: High, Medium, or Low.")
+
 class WordAttribution(BaseModel):
     word: str
     impact_score: float

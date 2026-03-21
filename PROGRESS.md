@@ -50,3 +50,8 @@ This document tracks the end-to-end development of the NHS Mental Health Triage 
 - [x] Implement mathematical Leave-One-Out (Occlusion) attribution in PyTorch backend.
 - [x] Return token impact weights to the frontend.
 - [x] Build XAI clinical insight viewer (color-coded highlighting) inside React EHR dashboard.
+
+## Phase 10: Active Learning (Continuous Feedback Loop)
+- [ ] Build `/feedback` API endpoint to capture clinician overrides.
+- [ ] Wire React `Override` button to submit corrected ground-truth labels.
+- [ ] Save override data to a simulated retraining dataset (`feedback_loop.csv`).
