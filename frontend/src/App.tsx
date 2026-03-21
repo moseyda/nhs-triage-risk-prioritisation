@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { RefreshCw, Inbox, Stethoscope, AlertTriangle, CheckCircle } from 'lucide-react'
+import { RefreshCw, Inbox, Stethoscope, AlertTriangle, CheckCircle, Info, Activity } from 'lucide-react'
 import './App.css'
 
 interface WordAttribution {
@@ -38,6 +38,13 @@ function App() {
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null)
   const [overrideTarget, setOverrideTarget] = useState<PatientCase | null>(null)
   const [isRetraining, setIsRetraining] = useState(false)
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'info'} | null>(null)
+  const [confirmRetrainOpen, setConfirmRetrainOpen] = useState(false)
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 6000);
+  }
 
   const fetchQueue = async () => {
     setLoading(true);
@@ -61,9 +68,12 @@ function App() {
     fetchQueue();
   }, [])
 
-  const handleRetrain = async () => {
-    if (!window.confirm("Are you sure you want to force massive GPU retraining calculations? This will pause model inference for up to 15 seconds.")) return;
-    
+  const handleRetrainClick = () => {
+    setConfirmRetrainOpen(true);
+  }
+
+  const executeRetrain = async () => {
+    setConfirmRetrainOpen(false);
     setIsRetraining(true);
     try {
       const response = await fetch('http://localhost:8000/api/v1/trigger-retrain', { method: 'POST' });
@@ -71,9 +81,9 @@ function App() {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to trigger retraining.");
       }
-      alert("Retraining successfully triggered! The live AI weights will mathematically adjust to the recent Ground Truth overrides and hot-reload shortly.");
+      showToast("Retraining successfully triggered! Live AI weights will mathematically adjust to the recent Ground Truth overrides.", "success");
     } catch (err: any) {
-      alert("Retraining failed: " + err.message);
+      showToast("Retraining failed: " + err.message, "error");
     } finally {
       setIsRetraining(false);
     }
@@ -112,11 +122,13 @@ function App() {
         })
       });
       
+      showToast(`Override Captured! Patient ${overrideTarget.mrn} escalated to ${band} Priority. Error logged to MLOps database.`, 'success');
+      
       const removedId = overrideTarget.id;
       setOverrideTarget(null);
       handleApprove(removedId);
     } catch (err) {
-      alert("Failed to submit MLOps feedback override.");
+      showToast("Failed to submit MLOps feedback override.", 'error');
     }
   }
 
@@ -130,8 +142,8 @@ function App() {
           <p>AI-Assisted Mental Health Referral Prioritisation</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button onClick={handleRetrain} disabled={isRetraining} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #da291c', cursor: isRetraining ? 'not-allowed' : 'pointer', background: 'rgba(218, 41, 28, 0.05)', color: '#da291c', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-             {isRetraining ? <div className="spinner" style={{width: '16px', height: '16px', margin: 0, borderWidth: '2px', borderColor: 'rgba(218, 41, 28, 0.2)', borderTopColor: '#da291c'}}></div> : '⚠️ Force MLOps Retrain'}
+          <button onClick={handleRetrainClick} disabled={isRetraining} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #da291c', cursor: isRetraining ? 'not-allowed' : 'pointer', background: 'rgba(218, 41, 28, 0.05)', color: '#da291c', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+             {isRetraining ? <div className="spinner" style={{width: '16px', height: '16px', margin: 0, borderWidth: '2px', borderColor: 'rgba(218, 41, 28, 0.2)', borderTopColor: '#da291c'}}></div> : <><Activity size={16}/> Force MLOps Retrain</>}
           </button>
           <button onClick={fetchQueue} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ccc', cursor: 'pointer', background: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <RefreshCw size={16} /> Refresh EHR Queue
@@ -280,6 +292,40 @@ function App() {
           </div>
         </div>
       )}
+
+      {confirmRetrainOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 style={{ color: 'var(--priority-high)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+              <Activity size={28} />
+              Force MLOps Retrain
+            </h2>
+            <p className="modal-desc">
+              Are you sure you want to force massive GPU retraining calculations? <br/><br/>
+              This process will dynamically update live system weights. Model inference will be paused for approximately 15 seconds.
+            </p>
+            <div className="modal-buttons" style={{marginTop: '2rem'}}>
+              <button className="band-button high" style={{background: 'var(--priority-high)', color: 'white'}} onClick={executeRetrain}>Yes, Execute Retraining Run</button>
+            </div>
+            <button className="modal-close" onClick={() => setConfirmRetrainOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className={`toast-container`}>
+          <div className={`toast ${toast.type}`}>
+            {toast.type === 'success' && <CheckCircle size={28} color="var(--priority-low)" />}
+            {toast.type === 'error' && <AlertTriangle size={28} color="var(--priority-high)" />}
+            {toast.type === 'info' && <Info size={28} color="var(--nhs-blue)" />}
+            <div>
+              <strong style={{fontSize: '1.05rem'}}>{toast.type === 'success' ? 'Success' : toast.type === 'error' ? 'Action Failed' : 'System Notice'}</strong><br/>
+              <span style={{ fontSize: '0.9rem', color: '#666' }}>{toast.message}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
