@@ -118,7 +118,9 @@ function App() {
           patient_id: overrideTarget.mrn,
           referral_text: overrideTarget.referral_text,
           ai_risk_score: overrideTarget.ai_triage.risk_score,
-          human_corrected_band: band
+          human_corrected_band: band,
+          age: overrideTarget.age,
+          gender: overrideTarget.gender
         })
       });
       

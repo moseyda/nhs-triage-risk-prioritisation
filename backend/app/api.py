@@ -100,12 +100,18 @@ def submit_feedback(feedback: FeedbackRequest, background_tasks: BackgroundTasks
             writer.writerow(["timestamp", "patient_id", "ai_risk_score", "human_corrected_band", "referral_text"])
             
         import datetime
+        
+        # === FEATURE 2: CONSISTENT MULTI-MODAL OVERRIDES ===
+        # We must fuse the text identically in the feedback loop so the re-training 
+        # algorithm receives the exact same Prompt Signature it uses in live inference.
+        fused_feedback_text = f"[AGE: {feedback.age} | GENDER: {feedback.gender}] {feedback.referral_text}"
+        
         writer.writerow([
             datetime.datetime.now().isoformat(),
             feedback.patient_id,
             feedback.ai_risk_score,
             feedback.human_corrected_band,
-            feedback.referral_text
+            fused_feedback_text
         ])
         
     # Check if we hit the limit to auto-retrain
