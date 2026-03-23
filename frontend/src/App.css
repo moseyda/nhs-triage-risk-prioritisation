@@ -131,6 +131,50 @@
 .band-Medium { color: var(--priority-medium); background: rgba(237, 139, 0, 0.1); }
 .band-Low { color: var(--priority-low); background: rgba(0, 150, 57, 0.1); }
 
+/* Tab buttons for Sidebar */
+.tab-button {
+  flex: 1;
+  padding: 1.25rem;
+  background: white;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  background: #f9f9f9;
+}
+
+.tab-button.active {
+  color: var(--nhs-blue);
+  border-bottom-color: var(--nhs-blue);
+  background: rgba(0, 94, 184, 0.05);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-item {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.history-item:hover {
+  background: #fdfdfd;
+}
+
 /* Main Detail View */
 .detail-view {
   padding: 2rem;

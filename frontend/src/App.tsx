@@ -24,6 +24,15 @@ interface PatientCase {
   ai_triage: TriageResponse;
 }
 
+interface OverrideHistoryItem {
+  timestamp: string;
+  patient_id: string;
+  ai_risk_score: number;
+  human_corrected_band: string;
+  referral_text: string;
+  reasoning: string;
+}
+
 const getAttributionColor = (score: number) => {
   if (score > 0.20) return 'rgba(218, 41, 28, 0.6)'; // Very high risk trigger (NHS Red)
   if (score > 0.05) return 'rgba(218, 41, 28, 0.3)';
@@ -41,6 +50,9 @@ function App() {
   const [isRetraining, setIsRetraining] = useState(false)
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'info'} | null>(null)
   const [confirmRetrainOpen, setConfirmRetrainOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue')
+  const [history, setHistory] = useState<OverrideHistoryItem[]>([])
+  const [reasoningText, setReasoningText] = useState("")
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type });
@@ -65,8 +77,16 @@ function App() {
     }
   }
 
+  const loadHistory = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/feedback-history');
+      if (response.ok) setHistory(await response.json());
+    } catch (err) {}
+  }
+
   useEffect(() => {
     fetchQueue();
+    loadHistory();
   }, [])
 
   const handleRetrainClick = () => {
@@ -121,14 +141,17 @@ function App() {
           ai_risk_score: overrideTarget.ai_triage.risk_score,
           human_corrected_band: band,
           age: overrideTarget.age,
-          gender: overrideTarget.gender
+          gender: overrideTarget.gender,
+          reasoning: reasoningText || "No clinical justification documented."
         })
       });
       
-      showToast(`Override Captured! Patient ${overrideTarget.mrn} escalated to ${band} Priority. Error logged to MLOps database.`, 'success');
+      showToast(`Override Captured! Patient ${overrideTarget.mrn} escalated to ${band} Priority. Trace logged to MLOps database.`, 'success');
       
       const removedId = overrideTarget.id;
       setOverrideTarget(null);
+      setReasoningText("");
+      loadHistory();
       handleApprove(removedId);
     } catch (err) {
       showToast("Failed to submit MLOps feedback override.", 'error');
@@ -156,38 +179,79 @@ function App() {
 
       {/* Left Panel: The Triage Inbox Queue */}
       <div className="panel sidebar">
-        <div className="panel-header">
-          <h2><Inbox size={20} /> Waiting List ({queue.length})</h2>
+        <div className="panel-header" style={{ padding: 0 }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid #eee' }}>
+            <button 
+              className={`tab-button ${activeTab === 'queue' ? 'active' : ''}`}
+              onClick={() => setActiveTab('queue')}
+            >
+              <Inbox size={18} /> Queue ({queue.length})
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'history' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('history'); loadHistory(); }}
+            >
+              <Activity size={18} /> Audit Log
+            </button>
+          </div>
         </div>
         
-        {loading ? (
-          <div className="spinner-container" style={{ padding: '2rem' }}>
-            <div className="spinner"></div>
-            <p>Evaluating clinical queue...</p>
-          </div>
-        ) : error ? (
-          <div style={{ padding: '1.5rem', color: 'red' }}>⚠️ {error}</div>
-        ) : queue.length === 0 ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
-            All clear. No pending referrals.
-          </div>
-        ) : (
-          <div className="queue-list">
-            {queue.map((pat) => (
-              <div 
-                key={pat.id} 
-                className={`queue-item ${selectedCaseId === pat.id ? 'active' : ''}`}
-                onClick={() => setSelectedCaseId(pat.id)}
-              >
-                <div className="queue-item-info">
-                  <h3>{pat.mrn}</h3>
-                  <p>{pat.age}{pat.gender} • {pat.referral_text}</p>
+        {activeTab === 'queue' && (
+          loading ? (
+            <div className="spinner-container" style={{ padding: '2rem' }}>
+              <div className="spinner"></div>
+              <p>Evaluating clinical queue...</p>
+            </div>
+          ) : error ? (
+            <div style={{ padding: '1.5rem', color: 'red' }}>⚠️ {error}</div>
+          ) : queue.length === 0 ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+              All clear. No pending referrals.
+            </div>
+          ) : (
+            <div className="queue-list">
+              {queue.map((pat) => (
+                <div 
+                  key={pat.id} 
+                  className={`queue-item ${selectedCaseId === pat.id ? 'active' : ''}`}
+                  onClick={() => setSelectedCaseId(pat.id)}
+                >
+                  <div className="queue-item-info">
+                    <h3>{pat.mrn}</h3>
+                    <p>{pat.age}{pat.gender} • {pat.referral_text}</p>
+                  </div>
+                  <div className={`priority-badge band-${pat.ai_triage.priority_band}`}>
+                    {pat.ai_triage.priority_band}
+                  </div>
                 </div>
-                <div className={`priority-badge band-${pat.ai_triage.priority_band}`}>
-                  {pat.ai_triage.priority_band}
+              ))}
+            </div>
+          )
+        )}
+
+        {activeTab === 'history' && (
+          <div className="history-list">
+            {history.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>No clinical overrides logged yet.</div>
+            ) : (
+              history.map((item, idx) => (
+                <div key={idx} className="history-item">
+                  <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '6px' }}>
+                    {new Date(item.timestamp).toLocaleString()} • Patient {item.patient_id}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>AI Score: {(item.ai_risk_score * 100).toFixed(1)}%</span>
+                    <span>→</span>
+                    <span className={`priority-badge band-${item.human_corrected_band}`} style={{ fontSize: '0.7rem' }}>
+                      {item.human_corrected_band}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.9rem', color: '#333', background: '#f5f5f5', padding: '10px', borderRadius: '6px', fontStyle: 'italic', borderLeft: '3px solid #ccc' }}>
+                    "{item.reasoning}"
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>
@@ -295,14 +359,36 @@ function App() {
               <br /><br />
               Select the correct clinical Ground Truth below. Your correction will be logged directly to the MLOps retraining pipeline to perpetually improve the model's accuracy.
             </p>
-            
-            <div className="modal-buttons">
-              <button className="band-button high" onClick={() => submitOverride('High')}>Escalate to High Priority</button>
-              <button className="band-button medium" onClick={() => submitOverride('Medium')}>Re-classify as Medium Priority</button>
-              <button className="band-button low" onClick={() => submitOverride('Low')}>Downgrade to Low Priority</button>
+
+            <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--nhs-dark-blue)' }}>Clinical Justification (Mandatory for NHS Audit)</label>
+              <textarea 
+                value={reasoningText}
+                onChange={(e) => setReasoningText(e.target.value)}
+                placeholder="Briefly explain the physiological or psychiatric reasoning for contradicting the AI model's assessment..."
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', minHeight: '90px', fontFamily: 'inherit', resize: 'vertical' }}
+              />
             </div>
             
-            <button className="modal-close" onClick={() => setOverrideTarget(null)}>Cancel Override</button>
+            <div className="modal-buttons">
+              <button 
+                className="band-button high" 
+                disabled={!reasoningText.trim()}
+                style={{ opacity: !reasoningText.trim() ? 0.5 : 1, cursor: !reasoningText.trim() ? 'not-allowed' : 'pointer' }}
+                onClick={() => submitOverride('High')}>Escalate to High Priority</button>
+              <button 
+                className="band-button medium" 
+                disabled={!reasoningText.trim()}
+                style={{ opacity: !reasoningText.trim() ? 0.5 : 1, cursor: !reasoningText.trim() ? 'not-allowed' : 'pointer' }}
+                onClick={() => submitOverride('Medium')}>Re-classify as Medium Priority</button>
+              <button 
+                className="band-button low" 
+                disabled={!reasoningText.trim()}
+                style={{ opacity: !reasoningText.trim() ? 0.5 : 1, cursor: !reasoningText.trim() ? 'not-allowed' : 'pointer' }}
+                onClick={() => submitOverride('Low')}>Downgrade to Low Priority</button>
+            </div>
+            
+            <button className="modal-close" onClick={() => { setOverrideTarget(null); setReasoningText(""); }}>Cancel Override</button>
           </div>
         </div>
       )}
