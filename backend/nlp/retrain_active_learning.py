@@ -40,16 +40,48 @@ def run_active_learning():
     if not os.path.exists(csv_file):
         return False, "No feedback data to train on (feedback_loop.csv missing)."
         
-    df = pd.read_csv(csv_file)
-    if len(df) == 0:
+    df_overrides = pd.read_csv(csv_file)
+    if len(df_overrides) == 0:
         return False, "Feedback file is empty."
         
     # Map text labels to integers mathematically
     label_map = {"Low": 0, "Medium": 1, "High": 2}
-    df['label'] = df['human_corrected_band'].map(lambda x: label_map.get(str(x).capitalize(), 0))
+    df_overrides['label'] = df_overrides['human_corrected_band'].map(lambda x: label_map.get(str(x).capitalize(), 0))
     
+    # === FEATURE 1: EXPERIENCE REPLAY BUFFER ===
+    # To prevent Catastrophic Forgetting of foundational anchor classes, we merge the overrides
+    # with a random sample of original historical training data (Rehearsal technique).
+    try:
+        historical_file = os.path.join(os.path.dirname(__file__), "..", "data", "synthetic_triage_data.csv")
+        df_history = pd.read_csv(historical_file)
+        
+        # Sample 50 records from historical training to anchor the model's memory
+        sample_size = min(len(df_history), 50)
+        df_history_sampled = df_history.sample(n=sample_size, random_state=42)
+        df_history_sampled['label'] = df_history_sampled['Priority_Band'].map(lambda x: label_map.get(str(x).capitalize(), 0))
+        
+        df_hist_clean = pd.DataFrame({
+            'referral_text': df_history_sampled['Referral_Text'],
+            'label': df_history_sampled['label']
+        })
+        df_over_clean = pd.DataFrame({
+            'referral_text': df_overrides['referral_text'],
+            'label': df_overrides['label']
+        })
+        
+        # Mathematically concatenate the DataFrames
+        df_final = pd.concat([df_over_clean, df_hist_clean], ignore_index=True)
+        print(f"[MLOps] Replay Buffer Active: {len(df_over_clean)} Overrides + {len(df_hist_clean)} Historical Anchors.")
+    except Exception as e:
+        df_final = pd.DataFrame({
+            'referral_text': df_overrides['referral_text'],
+            'label': df_overrides['label']
+        })
+        print(f"[MLOps] WARNING: Experience Replay Buffer failed to load. Defaulting to strict overrides: {e}")
+    # ===========================================
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"[MLOps] Active Learning Retraining initiated on {device} with {len(df)} ground-truth override records.")
+    print(f"[MLOps] Active Learning Retraining initiated on {device} with {len(df_final)} total records.")
     
     if not os.path.exists(MODEL_DIR):
         return False, "Source LLM weights not found. Cannot retrain."
@@ -60,8 +92,8 @@ def run_active_learning():
     model = model.to(device)
     model.train()
     
-    dataset = FeedbackDataset(df['referral_text'].values, df['label'].values, tokenizer)
-    loader = DataLoader(dataset, batch_size=2, shuffle=True)
+    dataset = FeedbackDataset(df_final['referral_text'].values, df_final['label'].values, tokenizer)
+    loader = DataLoader(dataset, batch_size=4, shuffle=True) # Increased batch size to stabilise the mixed Replay Buffer
     
     # Very low Learning Rate (1e-5) to correct the specific override mistakes WITHOUT catastrophic forgetting of its original knowledge
     optimizer = AdamW(model.parameters(), lr=1e-5) 
@@ -99,7 +131,7 @@ def run_active_learning():
             except Exception:
                 pass # Ignore if still locked by OS
     
-    # Archive the CSV so the model doesn't endlessly train on the exact same records
+    # Archive the CSV so the model doesn't endlessly train on the exact same overrides
     archive_name = os.path.join(os.path.dirname(__file__), "..", f"feedback_loop_archived_{timestamp}.csv")
     shutil.move(csv_file, archive_name)
     
