@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field
 from typing import Optional, List
 
 class ReferralRequest(BaseModel):
@@ -12,6 +13,15 @@ class FeedbackRequest(BaseModel):
     human_corrected_band: str = Field(..., description="The clinician's override decision: High, Medium, or Low.")
     age: int = Field(default=0, description="Patient age for multi-modal context.")
     gender: str = Field(default="Unknown", description="Patient gender for multi-modal context.")
+    reasoning: str = Field(default="No clinical justification documented.", description="Clinician's semantic reasoning for contradicting the AI.")
+
+class OverrideHistoryItem(BaseModel):
+    timestamp: str
+    patient_id: str
+    ai_risk_score: float
+    human_corrected_band: str
+    referral_text: str
+    reasoning: str
 
 class WordAttribution(BaseModel):
     word: str

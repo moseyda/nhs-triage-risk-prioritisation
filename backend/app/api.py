@@ -1,10 +1,13 @@
 import uuid
 import random
 import csv
+import csv
 import os
+import glob
+import pandas as pd
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from typing import List
-from .schemas import ReferralRequest, TriageResponse, PatientCase, FeedbackRequest
+from .schemas import ReferralRequest, TriageResponse, PatientCase, FeedbackRequest, OverrideHistoryItem
 from .config import settings
 from .services import triage_service
 from nlp.retrain_active_learning import run_active_learning
@@ -99,7 +102,7 @@ def submit_feedback(feedback: FeedbackRequest, background_tasks: BackgroundTasks
     with open(file_path, mode='a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         if not file_exists:
-            writer.writerow(["timestamp", "patient_id", "ai_risk_score", "human_corrected_band", "referral_text"])
+            writer.writerow(["timestamp", "patient_id", "ai_risk_score", "human_corrected_band", "referral_text", "reasoning"])
             
         import datetime
         
@@ -113,7 +116,8 @@ def submit_feedback(feedback: FeedbackRequest, background_tasks: BackgroundTasks
             feedback.patient_id,
             feedback.ai_risk_score,
             feedback.human_corrected_band,
-            fused_feedback_text
+            fused_feedback_text,
+            feedback.reasoning
         ])
         
     # Check if we hit the limit to auto-retrain
@@ -128,6 +132,35 @@ def submit_feedback(feedback: FeedbackRequest, background_tasks: BackgroundTasks
         pass
         
     return {"status": "success", "message": "Feedback captured for continuous learning."}
+
+@router.get("/feedback-history", response_model=List[OverrideHistoryItem], summary="Get MLOps Audit Log")
+def get_feedback_history():
+    """
+    Retrieves the clinical audit trail tracing every time a human clinician
+    disagreed with the AI's triage assessment. Mandatory for UK NHS medical device compliance.
+    """
+    history = []
+    
+    # Read both active and archived CSVs
+    all_files = glob.glob("feedback_loop*.csv")
+    for f in all_files:
+        try:
+            df = pd.read_csv(f)
+            for _, row in df.iterrows():
+                history.append(OverrideHistoryItem(
+                    timestamp=str(row.get('timestamp', '')),
+                    patient_id=str(row.get('patient_id', '')),
+                    ai_risk_score=float(row.get('ai_risk_score', 0.0) if pd.notna(row.get('ai_risk_score')) else 0.0),
+                    human_corrected_band=str(row.get('human_corrected_band', '')),
+                    referral_text=str(row.get('referral_text', '')),
+                    reasoning=str(row.get('reasoning', "No clinical justification documented."))
+                ))
+        except Exception:
+            pass
+            
+    # Sort chronologically, newest first
+    history.sort(key=lambda x: x.timestamp, reverse=True)
+    return history
 
 def _background_retrain_task():
     try:
