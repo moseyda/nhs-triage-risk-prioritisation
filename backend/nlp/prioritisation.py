@@ -21,6 +21,15 @@ def calibrate_probabilities(raw_probs: np.ndarray, method: str = "none") -> np.n
     # Example placeholder for future expansion
     raise NotImplementedError(f"Calibration method '{method}' is not implemented yet.")
 
+# === FEATURE 3: DETERMINISTIC RAG KNOWLEDGE BASE ===
+# This maps the AI's numerical outputs directly to official NHS clinical protocols
+NICE_GUIDELINES = {
+    "High": "CRITICAL RISK: Dispatch Crisis Resolution and Home Treatment Team (CRHTT) within 4 hours. Initiate Mental Health Act assessment watch per NICE Guideline CG133.",
+    "Medium": "ELEVATED RISK: Schedule psychiatric assessment within 7 days. Provide 24/7 crisis line contact details and safety planning per NICE Guideline CG115.",
+    "Low": "ROUTINE CARE: Refer to Improving Access to Psychological Therapies (IAPT) or primary care counseling. Assessment required within 28 days."
+}
+# ====================================================
+
 def get_priority_band(risk_prob: float, thresholds: dict = None) -> str:
     """
     Maps a calibrated probability to a clinical priority band.

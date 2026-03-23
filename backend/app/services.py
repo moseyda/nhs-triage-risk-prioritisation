@@ -2,7 +2,7 @@ import os
 import torch
 import joblib
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from nlp.prioritisation import get_priority_band, calculate_prioritisation_score
+from nlp.prioritisation import get_priority_band, calculate_prioritisation_score, NICE_GUIDELINES
 
 class TriageService:
     """
@@ -117,7 +117,8 @@ class TriageService:
             "risk_score": float(risk_prob),
             "priority_band": band,
             "prioritisation_score": float(score),
-            "word_attributions": word_attributions
+            "word_attributions": word_attributions,
+            "recommended_protocol": NICE_GUIDELINES.get(band, "No official clinical protocol assigned.")
         }
 
 # Global singleton to be used across API calls

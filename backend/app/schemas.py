@@ -20,6 +20,7 @@ class TriageResponse(BaseModel):
     priority_band: str = Field(..., description="The clinical priority band: e.g., 'High', 'Medium', 'Low'.")
     prioritisation_score: float = Field(..., description="The calculated score used to rank the referral in the triage queue.")
     word_attributions: List[WordAttribution] = Field(default_factory=list, description="XAI feature attributions highlighting which words drove the risk prediction.")
+    recommended_protocol: str = Field(default="No official protocol assigned.", description="The Deterministic RAG protocol mapped from the NHS NICE guidelines.")
 
 class PatientCase(BaseModel):
     id: str

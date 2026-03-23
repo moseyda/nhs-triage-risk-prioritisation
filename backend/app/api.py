@@ -51,7 +51,8 @@ def get_triage_queue():
                 risk_score=result["risk_score"],
                 priority_band=result["priority_band"],
                 prioritisation_score=result["prioritisation_score"],
-                word_attributions=result.get("word_attributions", [])
+                word_attributions=result.get("word_attributions", []),
+                recommended_protocol=result.get("recommended_protocol", "")
             )
             cases.append(PatientCase(
                 id=str(uuid.uuid4())[:8],
@@ -79,7 +80,8 @@ def predict_triage(request: ReferralRequest):
             risk_score=result["risk_score"],
             priority_band=result["priority_band"],
             prioritisation_score=result["prioritisation_score"],
-            word_attributions=result.get("word_attributions", [])
+            word_attributions=result.get("word_attributions", []),
+            recommended_protocol=result.get("recommended_protocol", "")
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

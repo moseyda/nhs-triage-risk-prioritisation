@@ -12,6 +12,7 @@ interface TriageResponse {
   priority_band: 'High' | 'Medium' | 'Low';
   prioritisation_score: number;
   word_attributions: WordAttribution[];
+  recommended_protocol?: string;
 }
 
 interface PatientCase {
@@ -255,6 +256,17 @@ function App() {
                 </div>
               </div>
             </div>
+
+            {selectedCase.ai_triage.recommended_protocol && (
+              <div style={{ marginTop: '1.5rem', background: 'rgba(238, 245, 255, 0.7)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid var(--nhs-blue)' }}>
+                <span className="metric-label" style={{ marginBottom: '0.4rem', color: 'var(--nhs-dark-blue)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Info size={16} /> RAG Protocol Assistant (NICE Guidelines)
+                </span>
+                <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: '1.5', color: '#333' }}>
+                  {selectedCase.ai_triage.recommended_protocol}
+                </p>
+              </div>
+            )}
 
             <div className="action-buttons">
               <button className="btn btn-override" onClick={() => handleOverrideClick(selectedCase.id)}>
