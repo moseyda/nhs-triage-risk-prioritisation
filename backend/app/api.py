@@ -39,7 +39,14 @@ def get_triage_queue():
     cases = []
     for ref in mock_referrals:
         try:
-            result = triage_service.predict(ref["text"])
+            # === FEATURE 2: MULTI-MODAL TEXTUAL FUSION ===
+            # We inject structured Demographics directly into the Transformer token stream
+            # so the model can calculate cross-attention between age/gender and suicide risk.
+            fused_text = f"[AGE: {ref['age']} | GENDER: {ref['gender']}] {ref['text']}"
+            
+            result = triage_service.predict(fused_text)
+            # ===============================================
+            
             triage_res = TriageResponse(
                 risk_score=result["risk_score"],
                 priority_band=result["priority_band"],
@@ -51,7 +58,7 @@ def get_triage_queue():
                 mrn=f"NHS-{random.randint(100000, 999999)}",
                 age=ref["age"],
                 gender=ref["gender"],
-                referral_text=ref["text"],
+                referral_text=ref["text"], # Still returning clean text for the main UI fields
                 ai_triage=triage_res
             ))
         except Exception:
