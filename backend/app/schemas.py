@@ -10,6 +10,8 @@ class FeedbackRequest(BaseModel):
     referral_text: str = Field(..., description="The original referral text.")
     ai_risk_score: float = Field(..., description="What the AI originally predicted.")
     human_corrected_band: str = Field(..., description="The clinician's override decision: High, Medium, or Low.")
+    age: int = Field(default=0, description="Patient age for multi-modal context.")
+    gender: str = Field(default="Unknown", description="Patient gender for multi-modal context.")
 
 class WordAttribution(BaseModel):
     word: str
