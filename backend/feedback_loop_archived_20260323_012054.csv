@@ -1,0 +1,2 @@
+timestamp,patient_id,ai_risk_score,human_corrected_band,referral_text
+2026-03-23T01:20:35.667152,NHS-485876,0.7788310050964355,Medium,[AGE: 60 | GENDER: M] i cant take it anymore. i bought the things i need and im driving to the bridge tonight.

@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from pydantic import BaseModel
 import csv
 import random
 import time
@@ -9,16 +10,15 @@ import json
 # 1. PASTE YOUR GEMINI API KEY HERE
 GEMINI_API_KEY = "YOUR_API_KEY_HERE"
 
-# 2. HOW MANY PATIENTS DO YOU WANT TO GENERATE?
-TOTAL_PATIENTS_TO_GENERATE = 50 
+# 2. HOW MANY PATIENTS DO YOU WANT TO GENERATE
+TOTAL_PATIENTS_TO_GENERATE = 1500
 # ==========================================
 
-def generate_batch(batch_size=10):
+def generate_batch(batch_size=100):
     """
     Calls the Gemini API to synthetically hallucinate highly realistic NHS referrals.
     """
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    client = genai.Client(api_key=GEMINI_API_KEY)
     
     prompt = f"""
     You are an expert UK NHS psychiatric triage nurse. Generate exactly {batch_size} synthetic, highly realistic mental health patient referral texts.
@@ -33,7 +33,10 @@ def generate_batch(batch_size=10):
     """
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
         # Clean potential markdown wrapping
         raw_text = response.text.strip()
         if raw_text.startswith("```json"):
@@ -51,8 +54,8 @@ def main():
         print("ERROR: Please insert your Gemini API key at the top of data_augmenter.py")
         return
         
-    csv_path = os.path.join(os.path.dirname(__file__), "..", "data", "synthetic_triage_data.csv")
-    batch_size = 10
+    csv_path = os.path.join(os.path.dirname(__file__), "..", "synthetic_triage_data.csv")
+    batch_size = 100
     
     print(f"Starting Data Augmentation: Autonomously generating {TOTAL_PATIENTS_TO_GENERATE} synthetic NHS patients via Gemini AI...")
     
