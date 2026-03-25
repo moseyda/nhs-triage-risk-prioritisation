@@ -68,7 +68,7 @@ def compute_metrics(eval_pred):
 
 def train_and_evaluate_llm():
     print(f"Loading data to fine-tune {MODEL_NAME}...")
-    df = load_synthetic_referral_data(num_samples=1000)
+    df = load_synthetic_referral_data(num_samples=5000)
     df = preprocess_data(df)
     
     train_df, val_df, test_df = get_train_val_test_splits(df)
@@ -93,8 +93,8 @@ def train_and_evaluate_llm():
     training_args = TrainingArguments(
         output_dir=save_dir,
         num_train_epochs=3,              # Keep low for prototype
-        per_device_train_batch_size=16,
-        per_device_eval_batch_size=16,
+        per_device_train_batch_size=64,  # Auto-scaled for 32GB DDR5 RAM
+        per_device_eval_batch_size=64,   # Auto-scaled for 32GB DDR5 RAM
         warmup_steps=50,
         weight_decay=0.01,
         logging_dir='./logs',
