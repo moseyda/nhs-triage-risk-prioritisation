@@ -36,9 +36,6 @@ class FeedbackDataset(Dataset):
         }
 
 def run_active_learning():
-    if not torch.cuda.is_available():
-        return False, "CRITICAL EXCEPTION: NVIDIA CUDA GPU is not detected! Aborting MLOps retraining to prevent excessive CPU fatigue."
-        
     csv_file = os.path.join(os.path.dirname(__file__), "..", "feedback_loop.csv")
     if not os.path.exists(csv_file):
         return False, "No feedback data to train on (feedback_loop.csv missing)."

@@ -67,9 +67,6 @@ def compute_metrics(eval_pred):
     }
 
 def train_and_evaluate_llm():
-    if not torch.cuda.is_available():
-        raise SystemError("CRITICAL EXCEPTION: NVIDIA CUDA GPU is not detected! Aborting training to prevent massive CPU fatigue. Please ensure your NVIDIA drivers are active.")
-        
     print(f"Loading data to fine-tune {MODEL_NAME}...")
     df = load_synthetic_referral_data(num_samples=1000)
     df = preprocess_data(df)
