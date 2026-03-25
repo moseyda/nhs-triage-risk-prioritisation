@@ -12,10 +12,15 @@ The system features:
 4. **FastAPI Backend:** A scalable REST API that loads the models into GPU VRAM (CUDA) on startup for near-instantaneous inference.
 5. **React Dashboard:** A simulated NHS Electronic Health Record (EHR) interface built with Vite, React, and Lucide SVG Icons, featuring a real-time triage inbox and a side-by-side human review panel.
 
-## Architecture
-The application is strictly decoupled:
-* `backend/`: Python 3.11, FastAPI, PyTorch, Hugging Face Transformers.
-* `frontend/`: React 18, TypeScript, Vite.
+## Enterprise MLOps Architecture
+This system is strictly decoupled into a dual-layer, production-grade Machine Learning pipeline engineered to mimic real-world NHS hospital infrastructure:
+
+### 1. The Data Ingestion Engine (FastAPI & Swagger UI)
+Located in `backend/`, this REST API simulates the hospital's central server. External General Practitioner (GP) clinics automatically transmit raw Multi-Modal JSON patient referrals (Demographics + Unstructured Symptoms) over the network directly into this API. 
+* **For Evaluators:** You can manually native-test JSON data ingestion, XAI attribution matrix generation, and deterministic RAG protocol assignment directly via the auto-generated Swagger UI portal at `http://localhost:8000/docs`.
+
+### 2. The Clinical Decision Support System (React UI)
+Located in `frontend/`, this React SPA represents the Consultant Psychiatrist's bespoke dashboard. **Clinicians do not type referrals here.** Instead, they use this interface to safely review the Triage Queue of patients that the *Ingestion Engine* has already processed computationally. It allows Human-in-the-Loop psychological experts to read the clinical RAG protocols, visually interpret the Explainable AI (XAI) token-impact vectors, and submit Active Learning Ground-Truth overrides back to the PyTorch parameter space.
 
 ## Setup & Installation
 
