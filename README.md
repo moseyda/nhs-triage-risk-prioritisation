@@ -1,13 +1,13 @@
-# NHS Mental Health Triage AI Prototype
+# NHS Mental Health Triage LLM Prototype
 
 This repository contains the clinical decision support prototype for the Computer Science dissertation: *"Enhancing Transformer-Based NLP (BERT/LLM) for Self-Harm Risk Prioritisation in Simulated NHS Mental Health Triage"* by Mo Seyda.
 
 ## Overview
-This project simulates an NHS Clinical Decision Support System (CDSS) where unreviewed Electronic Health Record (EHR) referrals are automatically analysed by an AI to estimate clinical risk. The goal is to safely support human clinicians by providing a dynamically prioritised triage queue (a "Human-in-the-Loop" workflow).
+This project simulates an NHS Clinical Decision Support System (CDSS) where unreviewed Electronic Health Record (EHR) referrals are automatically analysed by a Large Language Model (LLM) to mathematically estimate clinical risk. The goal is to safely support human clinicians by providing a dynamically prioritised triage queue (a "Human-in-the-Loop" workflow).
 
 The system features:
 1. **Baseline NLP Model:** A TF-IDF + Logistic Regression pipeline.
-2. **Enhanced AI Pipeline:** A Hugging Face BERT (`bert-base-uncased`) LLM fine-tuned to predict self-harm risk from unstructured, noisy clinical text.
+2. **Enhanced LLM Pipeline:** A Hugging Face BERT (`bert-base-uncased`) Transformer fine-tuned to predict self-harm risk from unstructured, noisy clinical text.
 3. **Dynamic Triage Logic:** Converts raw probability distributions into clinical priority bands (High/Medium/Low) and continuous sorting scores (0-100).
 4. **FastAPI Backend:** A scalable REST API that loads the models into GPU VRAM (CUDA) on startup for near-instantaneous inference.
 5. **React Dashboard:** A simulated NHS Electronic Health Record (EHR) interface built with Vite, React, and Lucide SVG Icons, featuring a real-time triage inbox and a side-by-side human review panel.
@@ -24,7 +24,7 @@ Located in `frontend/`, this React SPA represents the Consultant Psychiatrist's 
 
 ## Setup & Installation
 
-### 1. Backend (AI Inference Engine)
+### 1. Backend (LLM Inference Engine)
 Ensure you have **Python 3.11 or 3.12** installed (Python 3.14 does not guarantee pre-compiled PyTorch CUDA wheels).
 
 ```bash
