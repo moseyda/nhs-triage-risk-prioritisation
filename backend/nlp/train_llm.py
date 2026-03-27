@@ -93,9 +93,9 @@ def train_and_evaluate_llm():
     training_args = TrainingArguments(
         output_dir=save_dir,
         num_train_epochs=3,              # Keep low for prototype
-        per_device_train_batch_size=64,  # Auto-scaled for 32GB DDR5 RAM
-        per_device_eval_batch_size=64,   # Auto-scaled for 32GB DDR5 RAM
-        warmup_steps=50,
+        per_device_train_batch_size=16,  # Math corrected for Gradient updates (down from 64)
+        per_device_eval_batch_size=16,   
+        warmup_steps=65,                 # Calculated ~10% of total steps for proper convergence
         weight_decay=0.01,
         logging_dir='./logs',
         logging_steps=10,
