@@ -38,16 +38,39 @@ Located in `frontend/`, this React SPA represents the Consultant Psychiatrist's 
 
 ## Project Structure
 
-├── backend/
-│   ├── app/               # FastAPI REST API & endpoints
-│   ├── models/            # Saved PyTorch model weights (ignored in git)
-│   ├── data/              # Synthetic training datasets 
-│   └── nlp/               # PyTorch training scripts & ML logic
-├── frontend/
-│   ├── src/               # React components, pages, and API hooks
-│   └── public/            # Static assets
-├── README.md
-└── LICENSE
+```text
+nhs-triage-risk-prioritisation/
+├── backend/                 # FastAPI model inference engine
+│   ├── app/                 # API entry points and backend logic
+│   │   ├── api.py           # Main router (/queue, /predict)
+│   │   └── services.py      # Deterministic protocol mapping and inference services
+│   ├── nlp/                 # NLP models and pipelines
+│   │   ├── train.py         # PyTorch fine-tuning pipeline
+│   │   ├── predict.py       # Baseline TF-IDF and BERT prediction logic
+│   │   └── utils.py         # Tokenisation, metrics, and explanations
+│   ├── models/              # Trained model checkpoints (excluded from version control)
+│   ├── data/                # Synthetic datasets and train/test splits
+│   └── requirements.txt     # Backend Python dependencies
+│
+├── frontend/                # React-based clinical dashboard (Vite)
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   │   ├── PatientList.jsx
+│   │   │   ├── TriageCard.jsx
+│   │   │   └── ReviewPanel.jsx
+│   │   ├── pages/           # App pages
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Prioritisation.jsx
+│   │   │   └── Analytics.jsx
+│   │   ├── hooks/           # API request hooks
+│   │   │   └── useTriageApi.js
+│   │   └── main.jsx         # React entry point
+│   └── package.json         # Frontend dependencies
+│
+├── README.md                # Project documentation
+└── LICENSE                  # MIT License
+
+```
 
 
 ## Setup & Installation
@@ -56,8 +79,8 @@ Located in `frontend/`, this React SPA represents the Consultant Psychiatrist's 
 Ensure you have **Python 3.11 or 3.12** installed (Python 3.14 does not guarantee pre-compiled PyTorch CUDA wheels).
 
 ```bash
-git clone https://github.com/moseyda/nhs_mental_health_triage_ai.git
-cd nhs_mental_health_triage_ai/backend
+git clone https://github.com/moseyda/nhs-triage-risk-prioritisation.git
+cd nhs-triage-risk-prioritisation/backend
 
 # Create and activate virtual environment
 python -m venv venv
@@ -80,7 +103,7 @@ The API spins up at `http://localhost:8000/docs`, exposing the simulated `/queue
 ### 2. Frontend (NHS Clinician Dashboard)
 Open a new, second terminal window:
 ```bash
-cd nhs_mental_health_triage_ai/frontend
+cd nhs-triage-risk-prioritisation/frontend
 npm install
 npm run dev
 ```
