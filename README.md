@@ -1,15 +1,26 @@
-# NHS Mental Health Triage LLM Prototype
+# NHS Mental Health Triage BERT-Based CDSS Prototype
 
 This repository contains the clinical decision support prototype for the Computer Science dissertation: *"Enhancing Transformer-Based NLP (BERT/LLM) for Self-Harm Risk Prioritisation in Simulated NHS Mental Health Triage"* by Mo Seyda.
 
+## Problem Statement & Engineering Intent (Spec)
+
+**The Problem:** In mission-critical healthcare environments like NHS mental health triage, high referral volumes create dangerous bottlenecks. Purely automated AI is unsafe for clinical decisions, while purely manual triage is too slow. 
+
+**The Intent:** Engineer a "Human-in-the-Loop" Clinical Decision Support System (CDSS) that prioritizes patient safety and architectural scalability. The engineering spec requires:
+1. **Strict Decoupling:** A clear separation of concerns between the ML inference engine (**Python/FastAPI**) and the clinician dashboard (**TypeScript/React**).
+2. **Mission-Critical Reliability:** Implementing Explainable AI (XAI) so clinicians can trust and verify the AI's logic, ensuring the software is safe for high-stakes environments.
+3. **Modern API Design:** Building robust REST endpoints that simulate real-world hospital data ingestion.
+
+This intent-first design ensures the application is not just a theoretical AI model, but designed to reflect real-world clinical system constraints.
+
 ## Overview
-This project simulates an NHS Clinical Decision Support System (CDSS) where unreviewed Electronic Health Record (EHR) referrals are automatically analysed by a Large Language Model (LLM) to mathematically estimate clinical risk. The goal is to safely support human clinicians by providing a dynamically prioritised triage queue (a "Human-in-the-Loop" workflow).
+This project simulates an NHS Clinical Decision Support System (CDSS) where unreviewed Electronic Health Record (EHR) referrals are automatically analysed by a Large Language Model (LLM) to estimate risk probability from referral text. The goal is to safely support human clinicians by providing a dynamically prioritised triage queue (a "Human-in-the-Loop" workflow).
 
 The system features:
 1. **Baseline NLP Model:** A TF-IDF + Logistic Regression pipeline.
 2. **Enhanced LLM Pipeline:** A Hugging Face BERT (`bert-base-uncased`) Transformer fine-tuned to predict self-harm risk from unstructured, noisy clinical text.
-3. **Dynamic Triage Logic:** Converts raw probability distributions into clinical priority bands (High/Medium/Low) and continuous sorting scores (0-100).
-4. **FastAPI Backend:** A scalable REST API that loads the models into GPU VRAM (CUDA) on startup for near-instantaneous inference.
+3. **Probability-Based Triage Logic:** Converts raw probability distributions into clinical priority bands (High/Medium/Low) and continuous sorting scores (0-100).
+4. **FastAPI Backend:** A scalable REST API that loads models into GPU VRAM (CUDA) on startup where available, falling back to CPU inference.
 5. **React Dashboard:** A simulated NHS Electronic Health Record (EHR) interface built with Vite, React, and Lucide SVG Icons, featuring a real-time triage inbox and a side-by-side human review panel.
 
 ## Enterprise MLOps Architecture
@@ -66,4 +77,4 @@ cd backend
 venv\Scripts\activate
 python -m nlp.generate_report
 ```
-*Empirical results prove the fine-tuned BERT LLM achieves significantly higher precision (+15%) in identifying covert high-risk self-harm narratives compared to the traditional baseline approach.*
+*Empirical results indicate that the fine-tuned BERT model improves classification performance over the baseline, particularly in precision, when identifying high-risk self-harm indicators in referral text.*
