@@ -2,6 +2,9 @@
 
 This repository contains the clinical decision support prototype for the Computer Science dissertation: *"Enhancing Transformer-Based NLP (BERT/LLM) for Self-Harm Risk Prioritisation in Simulated NHS Mental Health Triage"* by Mo Seyda.
 
+## Disclaimer
+This prototype is for research and educational purposes only. It is not a medical device and must not be used for real clinical decision-making. All data used are synthetic.
+
 ## Problem Statement & Engineering Intent (Spec)
 
 **The Problem:** In mission-critical healthcare environments like NHS mental health triage, high referral volumes create dangerous bottlenecks. Purely automated AI is unsafe for clinical decisions, while purely manual triage is too slow. 
@@ -33,9 +36,23 @@ Located in `backend/`, this REST API simulates the hospital's central server. Ex
 ### 2. The Clinical Decision Support System (React UI)
 Located in `frontend/`, this React SPA represents the Consultant Psychiatrist's bespoke dashboard. **Clinicians do not type referrals here.** Instead, they use this interface to safely review the Triage Queue of patients that the *Ingestion Engine* has already processed computationally. It allows Human-in-the-Loop psychological experts to read the clinical RAG protocols, visually interpret the Explainable AI (XAI) token-impact vectors, and submit Active Learning Ground-Truth overrides back to the PyTorch parameter space.
 
+## Project Structure
+
+├── backend/
+│   ├── app/               # FastAPI REST API & endpoints
+│   ├── models/            # Saved PyTorch model weights (ignored in git)
+│   ├── data/              # Synthetic training datasets 
+│   └── nlp/               # PyTorch training scripts & ML logic
+├── frontend/
+│   ├── src/               # React components, pages, and API hooks
+│   └── public/            # Static assets
+├── README.md
+└── LICENSE
+
+
 ## Setup & Installation
 
-### 1. Backend (LLM Inference Engine)
+### 1. Backend (Model Inference Engine)
 Ensure you have **Python 3.11 or 3.12** installed (Python 3.14 does not guarantee pre-compiled PyTorch CUDA wheels).
 
 ```bash
@@ -78,6 +95,17 @@ venv\Scripts\activate
 python -m nlp.generate_report
 ```
 *Empirical results indicate that the fine-tuned BERT model improves classification performance over the baseline, particularly in precision, when identifying high-risk self-harm indicators in referral text.*
+
+## Contributing
+
+As this project originated as a Computer Science dissertation proof-of-concept, major architectural overhauls are not actively maintained. However, bug fixes, evaluation improvements, and minor feature additions are welcome.
+
+If you would like to contribute:
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/Improvement`)
+3. **Ensure code follows existing patterns** (maintain strict separation between the FastAPI MLOps backend and React CDSS frontend)
+4. **Test your changes** (ensure `generate_report.py` and the React UI build successfully)
+5. **Submit a pull request**
 
 ## Citation
 
