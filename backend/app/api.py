@@ -28,8 +28,8 @@ def health_check():
 @router.get("/queue", response_model=List[PatientCase], summary="Get Prioritised EHR Queue")
 def get_triage_queue():
     """
-    Simulates fetching a batch of unreviewed EHR referrals, piping them through the AI,
-    and returning them sorted by clinical priority.
+    Simulates fetching a batch of unreviewed EHR referrals, processing them through the model,
+    and returning them ordered by predicted risk score.
     """
     mock_referrals = [
         {"age": 24, "gender": "F", "text": "Panic attacks are getting worse. Afraid to leave the house. Feel completely trapped."},
