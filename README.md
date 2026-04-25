@@ -11,7 +11,7 @@ This repository contains the clinical decision support prototype for the Compute
 2. **Mission-Critical Reliability:** Implementing Explainable AI (XAI) so clinicians can trust and verify the AI's logic, ensuring the software is safe for high-stakes environments.
 3. **Modern API Design:** Building robust REST endpoints that simulate real-world hospital data ingestion.
 
-This intent-first design ensures the application is not just a theoretical AI model, but designed to reflect real-world clinical system constraints.
+This intent-first design ensures the application extends beyond a theoretical BERT-based NLP model to reflect real-world clinical system constraints.
 
 ## Overview
 This project simulates an NHS Clinical Decision Support System (CDSS) where unreviewed Electronic Health Record (EHR) referrals are automatically analysed by a Large Language Model (LLM) to estimate risk probability from referral text. The goal is to safely support human clinicians by providing a dynamically prioritised triage queue (a "Human-in-the-Loop" workflow).
