@@ -37,7 +37,6 @@ def train_and_evaluate_baseline():
     y_pred = pipeline.predict(X_test)
     y_prob = pipeline.predict_proba(X_test)
     
-    # In a multi-class setting, macro usually provides a broad measure.
     print("\n--- Classification Report ---")
     print(classification_report(y_test, y_pred, target_names=['Low', 'Medium', 'High']))
     
