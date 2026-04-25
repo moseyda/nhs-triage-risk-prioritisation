@@ -1,4 +1,3 @@
-# backend/app/main.py
 import contextlib
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +21,7 @@ app = FastAPI(
 # Set up CORS so the React frontend can call this backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For the prototype, allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

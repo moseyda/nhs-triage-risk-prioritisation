@@ -114,7 +114,7 @@ function App() {
   }
 
   const handleApprove = (id: string) => {
-    // In a real app, this would send an API request to mark as Triaged
+    // In a real NHS app (industry level project), this would send an API request to mark as Triaged
     setQueue(prev => prev.filter(c => c.id !== id));
     if (queue.length > 1) {
       const remaining = queue.filter(c => c.id !== id);
