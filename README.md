@@ -17,7 +17,7 @@ This prototype is for research and educational purposes only. It is not a medica
 This intent-first design ensures the application extends beyond a theoretical BERT-based NLP model to reflect real-world clinical system constraints.
 
 ## Overview
-This project simulates an NHS Clinical Decision Support System (CDSS) where unreviewed Electronic Health Record (EHR) referrals are automatically analysed by a Large Language Model (LLM) to estimate risk probability from referral text. The goal is to safely support human clinicians by providing a dynamically prioritised triage queue (a "Human-in-the-Loop" workflow).
+This project simulates an NHS Clinical Decision Support System (CDSS) where unreviewed Electronic Health Record (EHR) referrals are automatically analysed by a transformer-based model (BERT) to estimate risk probability from referral text. The goal is to safely support human clinicians by providing a dynamically prioritised triage queue (a "Human-in-the-Loop" workflow).
 
 The system features:
 1. **Baseline NLP Model:** A TF-IDF + Logistic Regression pipeline.
@@ -86,6 +86,25 @@ npm run dev
 ```
 Navigate to `http://localhost:5173` to interact with the CDSS React prototype.
 
+## API Example
+
+POST /predict
+
+```json
+{
+  "text": "[AGE: 45 | GENDER: M] I feel hopeless and have been thinking about ending my life."
+}
+```
+Response (truncated):
+
+```json
+{
+  "risk_score": 0.92,
+  "priority_band": "High",
+  "prioritisation_score": 92.0
+}
+```
+
 ## Evaluation & Dissertation Results
 The repository includes empirical evaluation scripts that test the models on Out-Of-Distribution (OOD) realistic clinical text.
 To generate the dissertation metrics:
@@ -96,6 +115,12 @@ python -m nlp.generate_report
 ```
 *Empirical results indicate that the fine-tuned BERT model improves classification performance over the baseline, particularly in precision, when identifying high-risk self-harm indicators in referral text.*
 
+## Limitations
+
+- Trained on synthetic data (limited real-world generalisability)
+- Sensitive to lexical cues and negation in clinical text
+- Probability outputs are not fully calibrated for ranking tasks
+- Not tested in a real-world NHS clinical setting
 ## Contributing
 
 As this project originated as a Computer Science dissertation proof-of-concept, major architectural overhauls are not actively maintained. However, bug fixes, evaluation improvements, and minor feature additions are welcome.
