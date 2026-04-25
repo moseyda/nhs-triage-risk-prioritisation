@@ -33,11 +33,14 @@ interface OverrideHistoryItem {
   reasoning: string;
 }
 
-const getAttributionColor = (score: number) => {
-  if (score > 0.20) return 'rgba(218, 41, 28, 0.6)'; // Very high risk trigger (NHS Red)
-  if (score > 0.05) return 'rgba(218, 41, 28, 0.3)';
-  if (score > 0.01) return 'rgba(218, 41, 28, 0.1)';
-  if (score < -0.05) return 'rgba(0, 150, 57, 0.2)'; // Safety indicator (NHS Green)
+const getAttributionColor = (score: number, maxAbsScore: number) => {
+  if (maxAbsScore === 0) return 'transparent';
+  const normalised = score / maxAbsScore; // Scale relative to strongest word
+  if (normalised > 0.6) return 'rgba(218, 41, 28, 0.6)';  // Strong risk driver (NHS Red)
+  if (normalised > 0.3) return 'rgba(218, 41, 28, 0.35)';
+  if (normalised > 0.1) return 'rgba(218, 41, 28, 0.15)';
+  if (normalised < -0.3) return 'rgba(0, 150, 57, 0.25)'; // Safety indicator (NHS Green)
+  if (normalised < -0.1) return 'rgba(0, 150, 57, 0.12)';
   return 'transparent';
 };
 
@@ -48,7 +51,7 @@ function App() {
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null)
   const [overrideTarget, setOverrideTarget] = useState<PatientCase | null>(null)
   const [isRetraining, setIsRetraining] = useState(false)
-  const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'info'} | null>(null)
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null)
   const [confirmRetrainOpen, setConfirmRetrainOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue')
   const [history, setHistory] = useState<OverrideHistoryItem[]>([])
@@ -81,7 +84,7 @@ function App() {
     try {
       const response = await fetch('http://localhost:8000/api/v1/feedback-history');
       if (response.ok) setHistory(await response.json());
-    } catch (err) {}
+    } catch (err) { }
   }
 
   useEffect(() => {
@@ -145,9 +148,9 @@ function App() {
           reasoning: reasoningText || "No clinical justification documented."
         })
       });
-      
+
       showToast(`Override Captured! Patient ${overrideTarget.mrn} escalated to ${band} Priority. Trace logged to MLOps database.`, 'success');
-      
+
       const removedId = overrideTarget.id;
       setOverrideTarget(null);
       setReasoningText("");
@@ -165,11 +168,11 @@ function App() {
       <div className="header-span">
         <div>
           <h1>CDSS Triage Workspace</h1>
-          <p>AI-Assisted Mental Health Referral Prioritisation</p>
+          <p>BERT-Based Mental Health Referral Prioritisation</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button onClick={handleRetrainClick} disabled={isRetraining} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #da291c', cursor: isRetraining ? 'not-allowed' : 'pointer', background: 'rgba(218, 41, 28, 0.05)', color: '#da291c', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-             {isRetraining ? <div className="spinner" style={{width: '16px', height: '16px', margin: 0, borderWidth: '2px', borderColor: 'rgba(218, 41, 28, 0.2)', borderTopColor: '#da291c'}}></div> : <><Activity size={16}/> Force MLOps Retrain</>}
+            {isRetraining ? <div className="spinner" style={{ width: '16px', height: '16px', margin: 0, borderWidth: '2px', borderColor: 'rgba(218, 41, 28, 0.2)', borderTopColor: '#da291c' }}></div> : <><Activity size={16} /> Force MLOps Retrain</>}
           </button>
           <button onClick={fetchQueue} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ccc', cursor: 'pointer', background: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <RefreshCw size={16} /> Refresh EHR Queue
@@ -181,13 +184,13 @@ function App() {
       <div className="panel sidebar">
         <div className="panel-header" style={{ padding: 0 }}>
           <div style={{ display: 'flex', borderBottom: '1px solid #eee' }}>
-            <button 
+            <button
               className={`tab-button ${activeTab === 'queue' ? 'active' : ''}`}
               onClick={() => setActiveTab('queue')}
             >
               <Inbox size={18} /> Queue ({queue.length})
             </button>
-            <button 
+            <button
               className={`tab-button ${activeTab === 'history' ? 'active' : ''}`}
               onClick={() => { setActiveTab('history'); loadHistory(); }}
             >
@@ -195,7 +198,7 @@ function App() {
             </button>
           </div>
         </div>
-        
+
         {activeTab === 'queue' && (
           loading ? (
             <div className="spinner-container" style={{ padding: '2rem' }}>
@@ -211,8 +214,8 @@ function App() {
           ) : (
             <div className="queue-list">
               {queue.map((pat) => (
-                <div 
-                  key={pat.id} 
+                <div
+                  key={pat.id}
                   className={`queue-item ${selectedCaseId === pat.id ? 'active' : ''}`}
                   onClick={() => setSelectedCaseId(pat.id)}
                 >
@@ -284,20 +287,21 @@ function App() {
                 <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 'normal' }}>Hover words for impact score</span>
               </span>
               <div className="referral-box" style={{ lineHeight: '1.8' }}>
-                {selectedCase.ai_triage.word_attributions && selectedCase.ai_triage.word_attributions.length > 0 ? (
-                  selectedCase.ai_triage.word_attributions.map((attr, idx) => (
-                    <span 
-                      key={idx} 
+                {selectedCase.ai_triage.word_attributions && selectedCase.ai_triage.word_attributions.length > 0 ? (() => {
+                  const maxAbsScore = Math.max(...selectedCase.ai_triage.word_attributions.map(a => Math.abs(a.impact_score)));
+                  return selectedCase.ai_triage.word_attributions.map((attr, idx) => (
+                    <span
+                      key={idx}
                       className="xai-word"
-                      style={{ backgroundColor: getAttributionColor(attr.impact_score) }}
+                      style={{ backgroundColor: getAttributionColor(attr.impact_score, maxAbsScore) }}
                     >
                       {attr.word}
                       <span className="tooltip">
                         Impact: {attr.impact_score > 0 ? '+' : ''}{(attr.impact_score * 100).toFixed(1)}%
                       </span>
                     </span>
-                  ))
-                ) : (
+                  ));
+                })() : (
                   `"${selectedCase.referral_text}"`
                 )}
               </div>
@@ -355,39 +359,39 @@ function App() {
               Active Learning Override
             </h2>
             <p className="modal-desc">
-              The AI originally evaluated Patient <strong>{overrideTarget.mrn}</strong> as a <strong>{overrideTarget.ai_triage.priority_band} Risk</strong>. 
+              The AI originally evaluated Patient <strong>{overrideTarget.mrn}</strong> as a <strong>{overrideTarget.ai_triage.priority_band} Risk</strong>.
               <br /><br />
               Select the correct clinical Ground Truth below. Your correction will be logged directly to the MLOps retraining pipeline to perpetually improve the model's accuracy.
             </p>
 
             <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--nhs-dark-blue)' }}>Clinical Justification (Mandatory for NHS Audit)</label>
-              <textarea 
+              <textarea
                 value={reasoningText}
                 onChange={(e) => setReasoningText(e.target.value)}
                 placeholder="Briefly explain the physiological or psychiatric reasoning for contradicting the AI model's assessment..."
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', minHeight: '90px', fontFamily: 'inherit', resize: 'vertical' }}
               />
             </div>
-            
+
             <div className="modal-buttons">
-              <button 
-                className="band-button high" 
+              <button
+                className="band-button high"
                 disabled={!reasoningText.trim()}
                 style={{ opacity: !reasoningText.trim() ? 0.5 : 1, cursor: !reasoningText.trim() ? 'not-allowed' : 'pointer' }}
                 onClick={() => submitOverride('High')}>Escalate to High Priority</button>
-              <button 
-                className="band-button medium" 
+              <button
+                className="band-button medium"
                 disabled={!reasoningText.trim()}
                 style={{ opacity: !reasoningText.trim() ? 0.5 : 1, cursor: !reasoningText.trim() ? 'not-allowed' : 'pointer' }}
                 onClick={() => submitOverride('Medium')}>Re-classify as Medium Priority</button>
-              <button 
-                className="band-button low" 
+              <button
+                className="band-button low"
                 disabled={!reasoningText.trim()}
                 style={{ opacity: !reasoningText.trim() ? 0.5 : 1, cursor: !reasoningText.trim() ? 'not-allowed' : 'pointer' }}
                 onClick={() => submitOverride('Low')}>Downgrade to Low Priority</button>
             </div>
-            
+
             <button className="modal-close" onClick={() => { setOverrideTarget(null); setReasoningText(""); }}>Cancel Override</button>
           </div>
         </div>
@@ -401,11 +405,11 @@ function App() {
               Force MLOps Retrain
             </h2>
             <p className="modal-desc">
-              Are you sure you want to force massive GPU retraining calculations? <br/><br/>
+              Are you sure you want to force massive GPU retraining calculations? <br /><br />
               This process will dynamically update live system weights. Model inference will be paused for approximately 15 seconds.
             </p>
-            <div className="modal-buttons" style={{marginTop: '2rem'}}>
-              <button className="band-button high" style={{background: 'var(--priority-high)', color: 'white'}} onClick={executeRetrain}>Yes, Execute Retraining Run</button>
+            <div className="modal-buttons" style={{ marginTop: '2rem' }}>
+              <button className="band-button high" style={{ background: 'var(--priority-high)', color: 'white' }} onClick={executeRetrain}>Yes, Execute Retraining Run</button>
             </div>
             <button className="modal-close" onClick={() => setConfirmRetrainOpen(false)}>Cancel</button>
           </div>
@@ -419,7 +423,7 @@ function App() {
             {toast.type === 'error' && <AlertTriangle size={28} color="var(--priority-high)" />}
             {toast.type === 'info' && <Info size={28} color="var(--nhs-blue)" />}
             <div>
-              <strong style={{fontSize: '1.05rem'}}>{toast.type === 'success' ? 'Success' : toast.type === 'error' ? 'Action Failed' : 'System Notice'}</strong><br/>
+              <strong style={{ fontSize: '1.05rem' }}>{toast.type === 'success' ? 'Success' : toast.type === 'error' ? 'Action Failed' : 'System Notice'}</strong><br />
               <span style={{ fontSize: '0.9rem', color: '#666' }}>{toast.message}</span>
             </div>
           </div>
