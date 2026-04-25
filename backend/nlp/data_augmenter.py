@@ -73,6 +73,7 @@ def main():
                 writer.writerow([patient_id, p.get("Age", 30), p.get("Gender", "Unknown"), p.get("Referral_Text", "Error"), p.get("Priority_Band", "Low")])
                 
             # Sleep 2 seconds to respect Gemini API free-tier rate limits
+            # Note: Adjust sleep time based on your Gemini API plan
             time.sleep(2) 
             
     print(f"\nSUCCESS: Appended {TOTAL_PATIENTS_TO_GENERATE} shiny new synthetic patients to {csv_path}!")

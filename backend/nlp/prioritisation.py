@@ -22,7 +22,7 @@ def calibrate_probabilities(raw_probs: np.ndarray, method: str = "none") -> np.n
     raise NotImplementedError(f"Calibration method '{method}' is not implemented yet.")
 
 # === FEATURE 3: DETERMINISTIC RAG KNOWLEDGE BASE ===
-# This maps the AI's numerical outputs directly to official NHS clinical protocols
+# This maps the model's numerical outputs directly to official NHS clinical protocols
 NICE_GUIDELINES = {
     "High": "CRITICAL RISK: Dispatch Crisis Resolution and Home Treatment Team (CRHTT) within 4 hours. Initiate Mental Health Act assessment watch per NICE Guideline CG133.",
     "Medium": "ELEVATED RISK: Schedule psychiatric assessment within 7 days. Provide 24/7 crisis line contact details and safety planning per NICE Guideline CG115.",

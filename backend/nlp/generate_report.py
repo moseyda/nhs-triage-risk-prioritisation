@@ -112,7 +112,6 @@ def generate_report():
     with open(os.path.join(out_dir, "evaluation_report.json"), "w") as f:
         json.dump(report, f, indent=4)
         
-    # Also save a human-readable text file
     with open(os.path.join(out_dir, "evaluation_report.txt"), "w") as f:
         f.write("DISSERTATION EVALUATION REPORT\n")
         f.write("==============================\n\n")
