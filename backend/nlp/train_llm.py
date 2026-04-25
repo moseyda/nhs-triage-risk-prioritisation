@@ -6,8 +6,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trai
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, roc_auc_score
 from .data_utils import load_synthetic_referral_data, preprocess_data, get_train_val_test_splits
 
-# We use 'bert-base-uncased' as a standard baseline encoder LLM for the prototype
-# It is widely supported by HuggingFace Tokenizers
+
 MODEL_NAME = "bert-base-uncased" 
 NUM_LABELS = 3 # 0: Low, 1: Medium, 2: High
 
@@ -50,7 +49,6 @@ def compute_metrics(eval_pred):
     precision, recall, f1, _ = precision_recall_fscore_support(labels, predictions, average='macro')
     acc = accuracy_score(labels, predictions)
     
-    # Optional: Calculate ROC AUC if logits can be safely converted to probabilities
     try:
         # Softmax to get probabilities
         probs = np.exp(logits) / np.sum(np.exp(logits), axis=-1, keepdims=True)
@@ -89,11 +87,11 @@ def train_and_evaluate_llm():
     
     save_dir = os.path.join(os.path.dirname(__file__), "..", "models_saved", "llm_finetuned")
     
-    # Define training arguments (optimized for CPU/Prototype testing)
+    # Define training arguments
     training_args = TrainingArguments(
         output_dir=save_dir,
-        num_train_epochs=3,              # Keep low for prototype
-        per_device_train_batch_size=16,  # Math corrected for Gradient updates (down from 64)
+        num_train_epochs=3,              # Keeping low for prototype
+        per_device_train_batch_size=16,  # Corrected for Gradient updates (down from 64)
         per_device_eval_batch_size=16,   
         warmup_steps=65,                 # Calculated ~10% of total steps for proper convergence
         weight_decay=0.01,
@@ -138,7 +136,6 @@ def predict_risk_llm(text: str) -> dict:
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
     
-    # Ensure model is in eval mode
     model.eval()
     
     encoding = tokenizer(
