@@ -69,7 +69,7 @@ def run_active_learning():
             'label': df_overrides['label']
         })
         
-        # Mathematically concatenate the DataFrames
+        # Concatenate the DataFrames
         df_final = pd.concat([df_over_clean, df_hist_clean], ignore_index=True)
         print(f"[MLOps] Replay Buffer Active: {len(df_over_clean)} Overrides + {len(df_hist_clean)} Historical Anchors.")
     except Exception as e:
@@ -115,7 +115,7 @@ def run_active_learning():
         
     print(f"[MLOps] Concept Drift correction complete. Avg Loss: {loss_sum/(len(loader)*2)}")
     
-    # Save the mathematically updated model into a NEW Rolling Checkpoint directory to prevent Windows file locks
+    # Save the updated model into a NEW Rolling Checkpoint directory to prevent Windows file locks
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     new_model_dir = os.path.join(os.path.dirname(__file__), "..", "models_saved", f"llm_finetuned_{timestamp}")
     model.save_pretrained(new_model_dir)
