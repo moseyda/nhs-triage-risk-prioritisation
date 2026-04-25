@@ -78,3 +78,16 @@ venv\Scripts\activate
 python -m nlp.generate_report
 ```
 *Empirical results indicate that the fine-tuned BERT model improves classification performance over the baseline, particularly in precision, when identifying high-risk self-harm indicators in referral text.*
+
+## Citation
+
+```bibtex
+@software{seyda2026nhstriage,
+  author = {Seyda, Mohamad},
+  title = {Evaluating Transformer-Based Decision Support for NHS Mental Health Triage: High-Risk Patient Identification and Prioritisation},
+  year = {2026},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/moseyda/nhs-triage-risk-prioritisation}}
+}
+```
