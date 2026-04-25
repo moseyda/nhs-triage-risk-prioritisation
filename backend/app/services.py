@@ -18,7 +18,7 @@ class TriageService:
         self.is_ready = False
         
     def load_models(self, custom_model_dir=None):
-        print(f"Loading Triage AI Models into memory from {custom_model_dir or 'Primary Dir'}...")
+        print(f"Loading Triage BERT Model from {custom_model_dir or 'Primary Directory'} into Memory...")
         # 1. Try to load LLM
         model_dir = custom_model_dir if custom_model_dir else os.path.join(os.path.dirname(__file__), "..", "models_saved", "llm_finetuned")
         try:

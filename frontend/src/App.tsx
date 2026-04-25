@@ -105,7 +105,7 @@ function App() {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to trigger retraining.");
       }
-      showToast("Retraining successfully triggered! Live AI weights will mathematically adjust to the recent Ground Truth overrides.", "success");
+      showToast("Retraining successfully triggered! BERT model weights will mathematically adjust to the recent Ground Truth overrides.", "success");
     } catch (err: any) {
       showToast("Retraining failed: " + err.message, "error");
     } finally {
@@ -243,7 +243,7 @@ function App() {
                     {new Date(item.timestamp).toLocaleString()} • Patient {item.patient_id}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>AI Score: {(item.ai_risk_score * 100).toFixed(1)}%</span>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>Risk Score: {(item.ai_risk_score * 100).toFixed(1)}%</span>
                     <span>→</span>
                     <span className={`priority-badge band-${item.human_corrected_band}`} style={{ fontSize: '0.7rem' }}>
                       {item.human_corrected_band}
@@ -264,7 +264,7 @@ function App() {
         {!selectedCase ? (
           <div className="empty-state">
             <Stethoscope size={48} color="#888" />
-            <p>Select a patient referral from the queue to review the AI's triage recommendation.</p>
+            <p>Select a patient referral from the queue to review the model’s triage recommendation.</p>
           </div>
         ) : (
           <div className="detail-view">
@@ -274,7 +274,7 @@ function App() {
                 <div className="patient-demographics">{selectedCase.age} Years Old • {selectedCase.gender}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <span className="metric-label" style={{ marginBottom: '0.2rem' }}>AI Router Assignment</span>
+                <span className="metric-label" style={{ marginBottom: '0.2rem' }}>Assigned Priority Band</span>
                 <span className={`priority-badge band-${selectedCase.ai_triage.priority_band}`} style={{ fontSize: '1.1rem' }}>
                   {selectedCase.ai_triage.priority_band} Priority
                 </span>
@@ -308,7 +308,7 @@ function App() {
             </div>
 
             <div>
-              <span className="metric-label" style={{ marginBottom: '1rem' }}>AI Clinical Decision Support Metrics</span>
+              <span className="metric-label" style={{ marginBottom: '1rem' }}>Clinical Decision Support Metrics</span>
               <div className="ai-reasoning">
                 <div className="metric-card">
                   <span className="metric-label">Confidence (High Risk Probability)</span>
@@ -359,7 +359,7 @@ function App() {
               Active Learning Override
             </h2>
             <p className="modal-desc">
-              The AI originally evaluated Patient <strong>{overrideTarget.mrn}</strong> as a <strong>{overrideTarget.ai_triage.priority_band} Risk</strong>.
+              The model originally evaluated Patient <strong>{overrideTarget.mrn}</strong> as a <strong>{overrideTarget.ai_triage.priority_band} Risk</strong>.
               <br /><br />
               Select the correct clinical Ground Truth below. Your correction will be logged directly to the MLOps retraining pipeline to perpetually improve the model's accuracy.
             </p>
@@ -369,7 +369,7 @@ function App() {
               <textarea
                 value={reasoningText}
                 onChange={(e) => setReasoningText(e.target.value)}
-                placeholder="Briefly explain the physiological or psychiatric reasoning for contradicting the AI model's assessment..."
+                placeholder="Briefly explain the physiological or psychiatric reasoning for contradicting the model's assessment..."
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', minHeight: '90px', fontFamily: 'inherit', resize: 'vertical' }}
               />
             </div>
