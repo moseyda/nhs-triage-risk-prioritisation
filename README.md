@@ -52,6 +52,9 @@ nhs-triage-risk-prioritisation/
 │   ├── data/                # Synthetic datasets and train/test splits
 │   └── requirements.txt     # Backend Python dependencies
 │
+├── dissertation_pdf/
+│  └── Mo_Seyda_Dissertation.pdf      # The final dissertation file
+│
 ├── frontend/                # React-based clinical dashboard (Vite)
 │   ├── src/
 │   │   ├── components/      # Reusable UI components
